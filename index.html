@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unique Publishers Billing</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Billing">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f2f7fb;--card:#fff;--tx:#1b2430;--mu:#6b7686;--ac:#2563eb;--ac2:#e8f1ff;--bd:#dde6ef;--ok:#16915f;--er:#d92d4a;--grad:linear-gradient(135deg,#10b981 0%,#3b82f6 52%,#ec4899 100%);--side:linear-gradient(170deg,#0b8f6a 0%,#2563eb 55%,#c4287a 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1621;--card:#162131;--tx:#e8eef6;--mu:#93a1b3;--ac:#6ea8ff;--ac2:#1d2e47;--bd:#26364a;--ok:#4cc38a;--er:#ff7a8a}}
+:root[data-theme="dark"]{--bg:#0e1621;--card:#162131;--tx:#e8eef6;--mu:#93a1b3;--ac:#6ea8ff;--ac2:#1d2e47;--bd:#26364a;--ok:#4cc38a;--er:#ff7a8a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.btn{font:inherit;font-size:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 13px;border-radius:8px;cursor:pointer}
+.btn.pri{background:var(--grad);color:#fff;border-color:transparent;font-weight:600}
+.btn.sm{padding:3px 9px;font-size:13px}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+h2{font-size:16px;margin:0 0 10px}
+input,select{font:inherit;font-family:system-ui,sans-serif;font-size:14px;padding:7px 9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.row>*{flex:1;min-width:110px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:13.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{color:var(--mu);font-weight:600}td.r,th.r{text-align:right}
+.q{width:62px;padding:3px 6px}
+.tot{font-family:system-ui,sans-serif;margin-top:10px}
+.tot div{display:flex;justify-content:space-between;padding:2px 0}
+.tot .g{font-size:20px;font-weight:700;color:var(--ac);border-top:2px solid var(--bd);margin-top:6px;padding-top:8px}
+.mu{color:var(--mu)}.low{color:var(--er);font-weight:600}
+.msg{font-family:system-ui,sans-serif;font-size:13px;margin:8px 0;color:var(--mu)}
+.hide{display:none}
+.pick{max-height:260px;overflow:auto;border:1px solid var(--bd);border-radius:8px;margin-bottom:8px}
+.pick div{padding:8px 10px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-family:system-ui,sans-serif;font-size:13.5px}
+.pick div:hover{background:var(--ac2)}
+dialog{border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);max-width:520px;width:92%;padding:18px}
+dialog::backdrop{background:#0008}
+@media print{.side,.topbar,#lock,main,#dlg .row{display:none!important}dialog{position:static;border:0;box-shadow:none;max-width:none;width:100%;color:#000;background:#fff}dialog::backdrop{display:none}}
+h2::after{content:'';display:block;height:3px;width:44px;border-radius:3px;background:var(--grad);margin-top:5px}
+.app{display:flex;min-height:100vh}
+.side{width:238px;flex:0 0 238px;background:var(--side);color:#fff;display:flex;flex-direction:column;padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:18px}
+.spin{display:block;width:104px;height:104px;border-radius:50%;background:#fff;object-fit:cover;box-shadow:0 6px 18px #0004}
+.spin.sm{width:34px;height:34px;box-shadow:none}
+/* each page has its own entrance animation */
+main section{backface-visibility:hidden}
+section.pg-bill{animation:pgRise .45s cubic-bezier(.2,.8,.2,1) backwards}
+section.pg-inv{animation:pgFlip .6s cubic-bezier(.2,.8,.2,1) backwards;transform-origin:50% 0;perspective:900px}
+section.pg-sales{animation:pgZoom .5s cubic-bezier(.3,1.4,.5,1) backwards}
+section.pg-in{animation:pgInLeft .5s cubic-bezier(.2,.8,.2,1) backwards}
+section.pg-out{animation:pgInRight .5s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes pgRise{from{opacity:0;transform:translateY(28px)}}
+@keyframes pgFlip{from{opacity:0;transform:perspective(900px) rotateX(-14deg) translateY(-12px)}}
+@keyframes pgZoom{from{opacity:0;transform:scale(.88)}}
+@keyframes pgInLeft{from{opacity:0;transform:translateX(-60px)}}
+@keyframes pgInRight{from{opacity:0;transform:translateX(60px)}}
+@media (prefers-reduced-motion:reduce){main section{animation:none!important}}
+/* Letters page: same gradient as the sign-in screen */
+section.pg-letter{animation:pgPaper .55s cubic-bezier(.2,.9,.3,1) backwards}
+@keyframes pgPaper{from{opacity:0;transform:translateY(46px) rotate(-2deg) scale(.95)}}
+@media (prefers-reduced-motion:reduce){section.pg-letter{animation:none!important}}
+.ltbg{background:linear-gradient(135deg,#10b981,#3b82f6 55%,#ec4899);border-radius:18px;padding:18px}
+.ltbg .lthead{color:#fff;margin:0 0 14px;text-shadow:0 1px 6px #0004;font-size:20px}
+.ltbg .lthead::after{display:none}
+.ltbg .lthead small{font-weight:400;opacity:.92;font-size:13px;margin-left:8px}
+.ltbg textarea{width:100%;min-height:58px;font:inherit;font-size:14px;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);box-sizing:border-box;resize:vertical;margin-bottom:6px}
+.ltbg details{margin-top:12px;font-family:system-ui,sans-serif}.ltbg summary{cursor:pointer;font-weight:600;margin-bottom:8px}
+.ltscroll{overflow:hidden;border-radius:8px}
+.ltbg .grid>*{min-width:0}
+.ltbg .grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+@media(max-width:800px){.ltbg .grid{grid-template-columns:minmax(0,1fr)}}
+#lt_paper{width:794px;max-width:none;min-width:0;margin:0;transform-origin:0 0}
+/* logo stays still; ONE light dot orbits around it */
+.logowrap{position:relative;display:inline-block;flex:0 0 auto;border-radius:50%;line-height:0}
+.logowrap::before{content:"";position:absolute;inset:-9px;border-radius:50%;pointer-events:none;
+  background:linear-gradient(135deg,#2f7bff 0%,#17d98b 100%) 50% 1.5px/9px 9px no-repeat;
+  -webkit-mask:radial-gradient(circle at 50% 6px,#000 4.1px,transparent 4.8px);mask:radial-gradient(circle at 50% 6px,#000 4.1px,transparent 4.8px);
+  filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 5px #19d3a2);animation:orbit 3s linear infinite}
+.logowrap.sm::before{inset:-6px;background:linear-gradient(135deg,#2f7bff 0%,#17d98b 100%) 50% .5px/7px 7px no-repeat;
+  -webkit-mask:radial-gradient(circle at 50% 4px,#000 3.1px,transparent 3.8px);mask:radial-gradient(circle at 50% 4px,#000 3.1px,transparent 3.8px);
+  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 4px #19d3a2)}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.logowrap::before{animation:none}}
+/* Letters > Book catalogue */
+.lttabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.lttabs .btn{flex:0 0 auto}
+.ltbg label.f{color:var(--mu);font-size:12px;display:block;margin-top:6px}
+#ap_paper{width:794px;max-width:none;min-width:0;margin:0;transform-origin:0 0}
+.ltbg h2.sub{margin-top:16px}
+#pp_pages{width:100%}
+.catbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.catbar>*{flex:0 0 auto;min-width:0}
+.catbar label.fld{display:flex;gap:6px;align-items:center;font-size:13px;font-family:system-ui,sans-serif}
+.catbar input[type=text]{width:260px;max-width:100%}.catbar select{width:auto}
+#cat_pages{width:100%}
+.cwrap{overflow:hidden;margin:0 auto 14px;border-radius:6px;box-shadow:0 4px 20px #0003;background:#fff9e8}
+.cwrap .ccard{position:relative}
+.cx{position:absolute;top:0;right:0;z-index:5;display:none;border:0;background:#d92d4a;color:#fff;font:700 11px/1 system-ui,sans-serif;width:16px;height:16px;border-radius:0 0 0 5px;cursor:pointer;padding:0}
+.ccard:hover .cx{display:block}
+@media(hover:none){.cx{display:block;opacity:.75}}
+.ccover[data-ci]{cursor:pointer}
+.cprice.live{cursor:text}
+.cprice.live:empty:before{content:"Enter price";font-size:7pt;color:#a4a4a4;font-weight:400}
+
+.brand b{font-size:15px;line-height:1.25}.brand small{opacity:.85}
+nav{display:flex;flex-direction:column;gap:4px;flex:1}
+nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;font-size:14.5px;color:#fff;background:transparent;border:0;padding:10px 12px;border-radius:10px;cursor:pointer}
+nav button:hover{background:#ffffff26}
+nav button.on{background:#ffffff38;font-weight:600;box-shadow:inset 3px 0 0 #fff}
+.side-foot{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.side-foot .btn{background:#ffffff1f;color:#fff;border:1px solid #ffffff40}
+.content{flex:1;min-width:0}
+.topbar{display:none}
+@media(max-width:800px){
+  .app{display:block}
+  .side{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-105%);transition:transform .25s;height:auto;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  body.nav-open .side{transform:none;box-shadow:0 0 0 100vmax #0006}
+  .topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--grad);color:#fff;position:sticky;top:0;z-index:20}
+  .topbar b{font-size:15px}
+  .menu-btn{background:#ffffff30;border:0;color:#fff;font-size:20px;border-radius:8px;padding:4px 10px;cursor:pointer}
+}
+#lock{display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#10b981,#3b82f6 55%,#ec4899);align-items:center;justify-content:center;padding:20px}
+body.locked #lock{display:flex}
+body.locked .app,body.locked dialog{display:none!important}
+.lockbox{background:#fffffff0;color:#1b2430;border-radius:20px;padding:26px 24px;width:100%;max-width:340px;text-align:center;box-shadow:0 20px 50px #0004}
+.lockbox .logowrap{margin:6px auto 14px}.lockbox .spin{width:128px;height:128px}
+.lockbox h2{margin:0 0 4px;font-size:18px}.lockbox h2::after{margin:6px auto 0}
+.lockbox input{text-align:center;font-size:22px;letter-spacing:8px;margin:14px 0 6px;background:#fff;color:#1b2430;border:1px solid #cfd8e3}
+.lockbox .msg{min-height:18px;margin:2px 0 10px;color:#d92d4a}
+.lockbox .btn{width:100%;padding:10px}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+</style></head>
+<body class="locked">
+<div id="lock"><div class="lockbox"><span class="logowrap"><img class="spin" alt="Logo"></span><h2>Unique Publishers and Distributors</h2><div class="mu" style="font-size:13px">Billing software · enter PIN to continue</div><input id="em" type="email" class="hide" autocomplete="username" placeholder="Email"><input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN"><div class="msg" id="pinmsg"></div><button class="btn pri" id="unlock">Unlock</button></div></div>
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="logowrap"><img class="spin" alt="Logo"></span><div><b>Unique Publishers<br>and Distributors</b><br><small>Billing Software</small></div></div>
+  <nav><button data-t="bill" class="on">🧾 Billing</button><button data-t="inv">📚 Inventory</button><button data-t="sales">📈 Sales</button><button data-t="in">📥 Inward</button><button data-t="out">📤 Outward</button><button data-t="letter">✉️ Letters</button></nav>
+  <div class="side-foot">
+  <button class="btn" id="folderBtn">📁 Choose save folder</button>
+  <button class="btn pri hide" id="install">Install app</button>
+  <button class="btn" id="logout">🔒 Lock / Logout</button>
+  </div>
+</aside>
+<div class="content">
+<div class="topbar"><button class="menu-btn" id="menu" aria-label="Menu">☰</button><span class="logowrap sm"><img class="spin sm" alt=""></span><b>Unique Publishers Billing</b></div>
+<main>
+<!-- BILLING -->
+<section id="t-bill" class="grid">
+  <div class="card">
+    <h2>Find books</h2>
+    <input id="q" placeholder="Search by title, author, ISBN or category…" autocomplete="off">
+    <div class="pick" id="pick" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <h2>Current bill</h2>
+    
+    <div class="tw"><table><thead><tr><th>ISBN</th><th>Book</th><th>Price</th><th>Qty</th><th class="r">Amount</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+    <div class="row" style="margin-top:10px">
+      <div><label class="mu" style="font-size:12px">Discount %</label><input id="disc" type="number" min="0" max="100" value="0"></div>
+      <div><label class="mu" style="font-size:12px">Payment</label><select id="pay"><option>Cash</option><option>UPI</option><option>Card</option></select></div>
+    </div>
+    <div class="tot" id="tot"></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" id="gen">Generate bill</button><button class="btn" id="clr">Clear</button></div>
+    <div class="msg" id="bmsg"></div>
+  </div>
+</section>
+<!-- INVENTORY -->
+<section id="t-inv" class="hide">
+  <div class="card">
+    <h2>Inventory <span class="mu" id="icount"></span></h2>
+    <div class="row">
+      <label class="btn" style="flex:0 0 auto">Import Excel<input id="file" type="file" accept=".xlsx,.xls,.csv" class="hide"></label>
+      <button class="btn" id="tpl" style="flex:0 0 auto">Download template</button>
+      <button class="btn" id="exp" style="flex:0 0 auto">Export all to Excel</button>
+      <button class="btn" id="samp" style="flex:0 0 auto">Load sample data</button>
+      <label class="btn" style="flex:0 0 auto">Upload logo<input id="logo" type="file" accept="image/*" class="hide"></label>
+      <button class="btn" id="logoX" style="flex:0 0 auto">Remove logo</button>
+      <button class="btn" id="iclr" style="flex:0 0 auto;color:var(--er)">Clear all inventory</button>
+    </div>
+    <div class="msg" id="imsg">Excel columns used: ISBN, Title, Author, Category, Price (headers are matched flexibly). Importing merges by ISBN.</div>
+    <div class="row"><input id="iq" placeholder="Filter inventory…"></div>
+    <div class="row" style="align-items:end">
+      <input id="n_isbn" placeholder="ISBN"><input id="n_title" placeholder="Title" style="flex:2"><input id="n_author" placeholder="Author"><input id="n_cat" placeholder="Category">
+      <input id="n_price" type="number" placeholder="Price">
+      <button class="btn pri" id="add" style="flex:0 0 auto">Add / update</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>ISBN</th><th>Title</th><th>Author</th><th>Category</th><th class="r">Price</th><th></th></tr></thead><tbody id="ibody"></tbody></table></div>
+  </div>
+</section>
+<!-- SALES -->
+<section id="t-sales" class="hide">
+  <div class="card">
+    <h2>Sales history <span class="mu" id="scount"></span></h2>
+    <div class="row" style="align-items:end"><div><label class="mu" style="font-size:12px">Invoice prefix (editable)</label><input id="pfx" maxlength="12" placeholder="e.g. UPD-"></div><div><label class="mu" style="font-size:12px">Next invoice number</label><input id="nxt" type="number" min="1"></div></div>
+    <div class="row"><button class="btn" id="sexp" style="flex:0 0 auto">Export sales to Excel</button><button class="btn" id="sclr" style="flex:0 0 auto;color:var(--er)">Clear sales data</button></div>
+    <div class="msg" id="sum"></div>
+    <div class="tw"><table><thead><tr><th>Bill #</th><th>Date</th><th>Payment</th><th class="r">Items</th><th class="r">Total</th><th></th></tr></thead><tbody id="sbody"></tbody></table></div>
+  </div>
+</section>
+<!-- INWARD -->
+<section id="t-in" class="hide">
+  <div class="grid">
+    <div class="card">
+      <h2>Scan or pick books from the master list</h2>
+      <div class="row"><input id="in_scan" placeholder="Scan barcode, or type ISBN / title / author, then Enter" autocomplete="off" style="flex:3"><button class="btn" id="in_cam" style="flex:0 0 auto">Scan with camera</button></div>
+      <div class="pick" id="in_pick"></div>
+      <div class="msg" id="in_msg">Scan with a barcode scanner or tap a book to add it. Scanning the same book again adds 1 more. Price comes from the master list and can be edited per line.</div>
+    </div>
+    <div class="card">
+      <h2>New inward entry</h2>
+      <div class="row"><input id="in_date" type="date"><input id="in_ref" placeholder="Challan / reference no"></div>
+      <div class="row"><input id="in_party" list="in_plist" placeholder="Supplier / publisher name" autocomplete="off"><datalist id="in_plist"></datalist><input id="in_note" placeholder="Remarks (optional)"></div>
+      <div class="tw"><table><thead><tr><th>ISBN</th><th>Book</th><th>Price</th><th>Qty</th><th class="r">Amount</th><th></th></tr></thead><tbody id="in_cart"></tbody></table></div>
+      <div class="row" style="margin-top:8px"><div><label class="mu" style="font-size:12px">Discount %</label><input id="in_disc" type="number" min="0" max="100" value="0"></div><div><label class="mu" style="font-size:12px">Entry number prefix (editable)</label><input id="in_pfx" maxlength="12"></div></div>
+      <div class="tot" id="in_tot"></div>
+      <div class="msg" id="in_next"></div>
+      <div class="row"><button class="btn pri" id="in_save">Save inward entry</button><button class="btn" id="in_clr">Clear entry form</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Saved inward entries <span class="mu">(separate from bills and sales)</span></h2>
+    <div class="row"><select id="in_pf"></select><input id="in_q" placeholder="Search entry no, reference…" style="flex:2"><button class="btn" id="in_exp" style="flex:0 0 auto">Export to Excel</button><button class="btn" id="in_clrall" style="flex:0 0 auto;color:var(--er)">Clear saved inward data</button></div>
+    <div class="msg">Choose a supplier in the first box, then click Export to Excel to get one file with every book, price, quantity, amount and the total for that supplier.</div>
+    <div class="tw"><table><thead><tr><th>Entry no</th><th>Date</th><th>Received from</th><th>Reference</th><th class="r">Books</th><th class="r">Qty</th><th class="r">Net amount</th><th></th></tr></thead><tbody id="in_body"></tbody></table></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Summary by book (inward vs outward)</h2>
+    <div class="tw"><table><thead><tr><th>ISBN</th><th>Book</th><th class="r">Inward</th><th class="r">Outward</th><th class="r">Balance (In − Out)</th></tr></thead><tbody id="in_sum"></tbody></table></div>
+  </div>
+</section>
+<!-- OUTWARD -->
+<section id="t-out" class="hide">
+  <div class="grid">
+    <div class="card">
+      <h2>Scan or pick books from the master list</h2>
+      <div class="row"><input id="out_scan" placeholder="Scan barcode, or type ISBN / title / author, then Enter" autocomplete="off" style="flex:3"><button class="btn" id="out_cam" style="flex:0 0 auto">Scan with camera</button></div>
+      <div class="pick" id="out_pick"></div>
+      <div class="msg" id="out_msg">Scan with a barcode scanner or tap a book to add it. Scanning the same book again adds 1 more. Price comes from the master list and can be edited per line.</div>
+    </div>
+    <div class="card">
+      <h2>New outward entry</h2>
+      <div class="row"><input id="out_date" type="date"><input id="out_ref" placeholder="Challan / reference no"></div>
+      <div class="row"><input id="out_party" list="out_plist" placeholder="School name" autocomplete="off"><datalist id="out_plist"></datalist><input id="out_note" placeholder="Remarks (optional)"></div>
+      <div class="tw"><table><thead><tr><th>ISBN</th><th>Book</th><th>Price</th><th>Qty</th><th class="r">Amount</th><th></th></tr></thead><tbody id="out_cart"></tbody></table></div>
+      <div class="row" style="margin-top:8px"><div><label class="mu" style="font-size:12px">Discount %</label><input id="out_disc" type="number" min="0" max="100" value="0"></div><div><label class="mu" style="font-size:12px">Entry number prefix (editable)</label><input id="out_pfx" maxlength="12"></div></div>
+      <div class="tot" id="out_tot"></div>
+      <div class="msg" id="out_next"></div>
+      <div class="row"><button class="btn pri" id="out_save">Save outward entry</button><button class="btn" id="out_clr">Clear entry form</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Saved outward entries <span class="mu">(separate from bills and sales)</span></h2>
+    <div class="row"><select id="out_pf"></select><input id="out_q" placeholder="Search entry no, reference…" style="flex:2"><button class="btn" id="out_exp" style="flex:0 0 auto">Export to Excel</button><button class="btn" id="out_clrall" style="flex:0 0 auto;color:var(--er)">Clear saved outward data</button></div>
+    <div class="msg">Choose a school in the first box, then click Export to Excel to get one file with every book, price, quantity, amount and the total for that school.</div>
+    <div class="tw"><table><thead><tr><th>Entry no</th><th>Date</th><th>Sent to (school)</th><th>Reference</th><th class="r">Books</th><th class="r">Qty</th><th class="r">Net amount</th><th></th></tr></thead><tbody id="out_body"></tbody></table></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Summary by book (inward vs outward)</h2>
+    <div class="tw"><table><thead><tr><th>ISBN</th><th>Book</th><th class="r">Inward</th><th class="r">Outward</th><th class="r">Balance (In − Out)</th></tr></thead><tbody id="out_sum"></tbody></table></div>
+  </div>
+</section>
+<!-- LETTERS -->
+<section id="t-letter" class="hide">
+  <div class="ltbg">
+    <h2 class="lthead" id="lt_title">✉️ To Whom It May Concern <small>Book fair sales &amp; incentive letter</small></h2>
+    <div class="lttabs"><button class="btn pri" id="lt_tabL">✉️ Letter</button><button class="btn" id="lt_tabA">📝 Appointment letter</button><button class="btn" id="lt_tabP">📄 Proposal</button><button class="btn" id="lt_tabC">📖 Book catalogue</button></div>
+    <div id="lt_letter">
+    <div class="grid">
+      <div class="card">
+        <h2>Letter details <span class="mu" id="lt_state"></span></h2>
+        <div class="row"><div style="flex:2"><label class="mu" style="font-size:12px">School name</label><input id="lt_school" autocomplete="off"></div><div><label class="mu" style="font-size:12px">Book fair date</label><input id="lt_date" type="date"></div></div>
+        <label class="mu" style="font-size:12px">Campus / block (printed after the school name)</label><input id="lt_campus" autocomplete="off">
+        <label class="mu" style="font-size:12px;margin-top:8px;display:block">Subject</label><input id="lt_subject" autocomplete="off">
+        <label class="mu" style="font-size:12px;margin-top:8px;display:block">Letter alignment</label><select id="lt_align"><option value="center">Center</option><option value="left">Left</option><option value="justify">Justified</option></select>
+        <h2 style="margin-top:16px">Sales by block</h2>
+        <div class="tw"><table><thead><tr><th>Block / particulars</th><th>UPI (₹)</th><th>Card &amp; Cash (₹)</th><th class="r">Total</th><th></th></tr></thead><tbody id="lt_rows"></tbody></table></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="lt_addrow" style="flex:0 0 auto">+ Add block</button><div><label class="mu" style="font-size:12px">Agreed incentive %</label><input id="lt_pct" type="number" min="0" max="100" step="0.01"></div></div>
+        <div class="tot" id="lt_inc"></div>
+        <details><summary>Edit wording, sign-off and letterhead</summary>
+          <label class="mu" style="font-size:12px">Heading</label><input id="lt_heading">
+          <label class="mu" style="font-size:12px">Salutation</label><input id="lt_dear">
+          <label class="mu" style="font-size:12px">Greeting line</label><textarea id="lt_greet"></textarea>
+          <label class="mu" style="font-size:12px">Opening paragraph</label><textarea id="lt_p1"></textarea>
+          <label class="mu" style="font-size:12px">Note (printed in brackets under Amount in Words; leave empty to hide)</label><input id="lt_note" autocomplete="off">
+          <label class="mu" style="font-size:12px">Thanks paragraph</label><textarea id="lt_thanks"></textarea>
+          <label class="mu" style="font-size:12px">Closing paragraph</label><textarea id="lt_future"></textarea>
+          <div class="row"><div><label class="mu" style="font-size:12px">Closing</label><input id="lt_close"></div><div><label class="mu" style="font-size:12px">Sign-off</label><input id="lt_sign"></div></div>
+          <div class="row"><div><label class="mu" style="font-size:12px">Company name</label><input id="lt_company"></div><div><label class="mu" style="font-size:12px">Signed by</label><input id="lt_team"></div></div>
+          <label class="mu" style="font-size:12px">Letterhead address line</label><input id="lt_addr">
+          <label class="mu" style="font-size:12px;margin-top:6px;display:block">Footer quote (English)</label><input id="lt_qen">
+          <label class="mu" style="font-size:12px;margin-top:6px;display:block">Footer quote (Kannada)</label><input id="lt_qkn">
+          <div class="msg">Use <b>**bold**</b> for bold text. Tokens {school}, {campus} and {date} fill in automatically. The logo comes from Inventory &gt; Upload logo.</div>
+        </details>
+        <div class="row" style="margin-top:12px"><button class="btn pri" id="lt_save">Save letter</button><button class="btn" id="lt_saveas">Save as new</button><button class="btn" id="lt_print">Print / PDF</button><button class="btn" id="lt_new">New letter</button></div>
+        <div class="msg" id="lt_msg"></div>
+      </div>
+      <div class="card">
+        <h2>Letter preview</h2>
+        <div class="ltscroll"><div id="lt_paper" class="lp"></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Saved letters</h2>
+      <div class="row"><input id="lt_q" placeholder="Search by school…"></div>
+      <div class="tw"><table><thead><tr><th>Fair date</th><th>School</th><th class="r">Total sales</th><th class="r">Incentive</th><th></th></tr></thead><tbody id="lt_list"></tbody></table></div>
+    </div>
+    </div>
+    <div id="lt_cat" class="hide">
+      <div class="card">
+        <h2>Book catalogue <span class="mu" id="cat_info"></span></h2>
+        <div class="catbar">
+          <button class="btn pri" id="cat_add">＋ Add book images</button>
+          <button class="btn" id="cat_page">＋ Add page</button>
+          <button class="btn" id="cat_delpage">Delete last page</button>
+          <button class="btn" id="cat_bg">Change background</button>
+          <button class="btn" id="cat_bg0">Original background</button>
+          <button class="btn" id="cat_print">Print / Save A4 PDF</button>
+          <button class="btn" id="cat_reset">Clear all</button>
+        </div>
+        <div class="catbar">
+          <label class="fld">Heading <input type="text" id="cat_head" autocomplete="off"></label>
+          <label class="fld">Books per page <select id="cat_per"><option value="20">20 (4 × 5)</option><option value="16">16 (4 × 4)</option><option value="12">12 (4 × 3)</option></select></label>
+        </div>
+        <div class="catbar"><label class="fld" style="flex:1 1 340px">Share link (view only, no sign-in) <input type="text" id="cat_link" readonly style="width:100%"></label><button class="btn" id="cat_copy">Copy link</button><a class="btn" id="cat_open" target="_blank" rel="noopener" style="text-decoration:none">Open</a></div>
+        <div class="catbar"><label class="fld" style="flex:1 1 340px">Staff link (opens this editor) <input type="text" id="cat_elink" readonly style="width:100%"></label><button class="btn" id="cat_ecopy">Copy link</button></div>
+        <input id="cat_files" type="file" accept="image/*" multiple class="hide">
+        <input id="cat_bgfile" type="file" accept="image/*" class="hide">
+        <input id="cat_one" type="file" accept="image/*" class="hide">
+        <div class="msg">Add book-cover images (several at once is fine), then type the ₹ price under each cover. Click a cover to replace it, drag an image onto it, or paste one with Ctrl+V. Hover a slot and press ✕ to remove it. Print on A4 landscape and choose “Save as PDF”.</div>
+        <div class="msg" id="cat_sync"></div>
+        <div class="msg" id="cat_msg" style="color:var(--er)"></div>
+      </div>
+      <div id="cat_pages" style="margin-top:16px"></div>
+    </div>
+    <div id="lt_appt" class="hide">
+      <div class="grid">
+        <div class="card">
+          <h2>Appointment letter details</h2>
+          <div class="row"><div><label class="f">Big title</label><input id="ap_big" autocomplete="off"></div><div style="flex:2"><label class="f">Letter heading</label><input id="ap_sub" autocomplete="off"></div></div>
+          <div class="row"><div><label class="f">Addressed to</label><input id="ap_to" autocomplete="off"></div><div style="flex:2"><label class="f">School name &amp; place (optional, printed under it)</label><input id="ap_school" autocomplete="off"></div></div>
+          <label class="f">Opening paragraph</label><textarea id="ap_p1" style="min-height:96px"></textarea>
+          <label class="f">Highlighted line</label><textarea id="ap_p2" style="min-height:96px"></textarea>
+          <div class="row"><div><label class="f">Month table starts with (12 months are shown)</label><select id="ap_start"><option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option></select></div></div>
+          <label class="f">Profit paragraph</label><textarea id="ap_profit" style="min-height:96px"></textarea>
+          <div class="row"><div><label class="f">Incentive on sales</label><input id="ap_inc" autocomplete="off"></div><div><label class="f">Library purchases</label><input id="ap_lib" autocomplete="off"></div><div><label class="f">Teachers &amp; staff discount</label><input id="ap_tch" autocomplete="off"></div></div>
+          <h2 class="sub">School details <span class="mu" style="font-weight:400;font-size:12px">(leave blank to hand-write after printing)</span></h2>
+          <div class="row"><div><label class="f">Total number of students</label><input id="ap_students" autocomplete="off"></div><div><label class="f">Classes from: Grade</label><input id="ap_grade" autocomplete="off"></div></div>
+          <div class="row"><div><label class="f">School board</label><input id="ap_board" autocomplete="off"></div><div><label class="f">Venue</label><input id="ap_venue" autocomplete="off"></div></div>
+          <details><summary>Edit sign line, letterhead and footer</summary>
+            <label class="f">Sign line</label><input id="ap_sig" autocomplete="off">
+            <label class="f">Company name</label><input id="ap_company" autocomplete="off">
+            <label class="f">Letterhead address</label><textarea id="ap_addr"></textarea>
+            <label class="f">Footer quote (English)</label><input id="ap_qen" autocomplete="off">
+            <label class="f">Footer quote (Kannada)</label><input id="ap_qkn" autocomplete="off">
+            <div class="msg">Use <b>**bold**</b> for bold text. Use {inc}, {lib} and {tch} in the profit paragraph to insert the underlined values. The logo comes from Inventory &gt; Upload logo.</div>
+          </details>
+          <div class="row" style="margin-top:12px"><button class="btn pri" id="ap_print">Print / PDF</button><button class="btn" id="ap_reset">Reset wording</button></div>
+          <div class="msg">Your changes are remembered on this device.</div>
+        </div>
+        <div class="card"><h2>Appointment letter preview</h2><div class="ltscroll"><div id="ap_paper" class="lp"></div></div></div>
+      </div>
+    </div>
+    <div id="lt_prop" class="hide">
+      <div class="grid">
+        <div class="card">
+          <h2>Proposal details</h2>
+          <label class="f">Page background</label>
+          <select id="pr_bg"><option value="green">Light green &amp; blue gradient</option><option value="blue">Light blue &amp; lavender gradient</option><option value="peach">Light peach &amp; pink gradient</option><option value="white">Plain white</option></select>
+          <label class="f">Greeting</label><input id="pr_greet" autocomplete="off">
+          <label class="f">Introduction (one paragraph per line)</label><textarea id="pr_intro" style="min-height:140px"></textarea>
+          <details><summary>Edit the 12 benefit boxes</summary><div id="pr_blocks"></div></details>
+          <label class="f" style="margin-top:12px">Closing paragraphs (one per line, centred)</label><textarea id="pr_closing" style="min-height:110px"></textarea>
+          <label class="f">Sign-off</label><textarea id="pr_sign" style="min-height:110px"></textarea>
+          <div class="msg">Use <b>**bold**</b> for bold text. Pages break automatically. The logo comes from Inventory &gt; Upload logo.</div>
+          <div class="row" style="margin-top:12px"><button class="btn pri" id="pr_print">Print / PDF</button><button class="btn" id="pr_reset">Reset wording</button></div>
+          <div class="msg">Your changes are remembered on this device.</div>
+        </div>
+        <div class="card"><h2>Proposal preview</h2><div id="pp_pages"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<dialog id="mvdlg"><div id="mvinfo"></div><div class="row" style="margin-top:12px"><button class="btn pri" id="mvdx">Export this entry to Excel</button><button class="btn" id="mvdclose">Close</button></div></dialog>
+<dialog id="camdlg"><video id="camv" playsinline muted style="width:100%;border-radius:8px;background:#000"></video><div class="msg" id="camst"></div><div class="row"><button class="btn" id="camclose">Done</button></div></dialog>
+</main>
+</div></div>
+
+<dialog id="dlg"><div id="inv"></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="ddl">Save invoice</button><select id="pw" style="flex:0 0 auto;width:auto"><option value="80">80 mm paper</option><option value="58">58 mm paper</option></select><button class="btn pri" id="pr">Print receipt</button><button class="btn" id="rs">Save receipt file</button><button class="btn" id="dclose">Close</button></div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const CLOUD=!!(window.APP_CFG&&APP_CFG.url&&APP_CFG.key);
+const SHOP="Unique Publishers and Distributors";
+const ADDR="31, 2nd Cross Rd, Gajanana Nagar, Srigandha Nagar, Hegganahalli, Bengaluru, Karnataka 560091";
+const DEFAULT_LOGO="data:image/jpeg;base64,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";
+const setBrandLogo=()=>document.querySelectorAll("img.spin").forEach(i=>i.src=logoData||DEFAULT_LOGO);
+const LOGO=`<svg width="56" height="56" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="12" fill="#8a3b12"/><path d="M12 16h13c2 0 3 1 3 3v22c0-2-1-3-3-3H12z M44 16H31c-2 0-3 1-3 3v22c0-2 1-3 3-3h13z" fill="#fff" opacity=".92"/></svg>`;
+const $=id=>document.getElementById(id);
+const fmt=n=>'₹'+(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let books=[],sales=[],letters=[],cart=[],counter=1,lastBill=null,logoData='',paperW='80',prefix='INV-',moves=[],mvpfx={IN:'IN-',OUT:'OUT-'},mvno={IN:1,OUT:1},mvcart={IN:[],OUT:[]};
+const logoHTML=()=>`<img src="${logoData||DEFAULT_LOGO}" alt="Logo" style="max-height:70px;max-width:220px">`;
+
+function load(){try{const d=JSON.parse(localStorage.getItem('bsb')||'null');if(d){books=d.books||[];sales=d.sales||[];letters=d.letters||[];counter=d.counter||1;logoData=d.logo||'';paperW=d.paper||'80';prefix=d.prefix!=null?d.prefix:'INV-';moves=(d.moves||[]).map(m=>m.items?m:{id:m.id,no:'-',type:m.type,date:m.date,party:m.party,ref:m.ref,note:m.note,items:[{isbn:m.isbn,title:m.title,author:m.author,qty:m.qty}]});mvpfx=d.mvpfx||mvpfx;mvno=d.mvno||mvno}}catch(e){}}
+function save(){try{localStorage.setItem('bsb',JSON.stringify({books,sales,letters,counter,logo:logoData,paper:paperW,prefix:prefix,moves:moves,mvpfx:mvpfx,mvno:mvno}))}catch(e){}}
+
+// tabs
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['bill','inv','sales','in','out','letter'].forEach(t=>{const e=$('t-'+t);e.classList.toggle('hide',t!==b.dataset.t);e.classList.remove('pg-'+t)});
+  {const e=$('t-'+b.dataset.t);void e.offsetWidth;e.classList.add('pg-'+b.dataset.t)}
+  render();if(b.dataset.t==='in'||b.dataset.t==='out')setTimeout(()=>$(b.dataset.t+'_scan').focus(),60);
+});
+
+// ---------- Billing ----------
+function renderPick(){
+  const q=$('q').value.toLowerCase().trim();
+  const list=books.filter(b=>!q||[b.isbn,b.title,b.author,b.category].join(' ').toLowerCase().includes(q)).slice(0,40);
+  $('pick').innerHTML=list.length?list.map(b=>`<div data-i="${esc(b.isbn)}"><span><b>${esc(b.title)}</b><br><span class="mu">${esc(b.author)} · ${esc(b.isbn)}</span></span><span style="text-align:right">${fmt(b.price)}</span></div>`).join(''):'<div class="mu">No books. Import your Excel file in the Inventory tab.</div>';
+  $('pick').querySelectorAll('[data-i]').forEach(d=>d.onclick=()=>addCart(d.dataset.i));
+}
+function addCart(isbn){
+  const b=books.find(x=>x.isbn===isbn);if(!b)return;
+  const c=cart.find(x=>x.isbn===isbn);
+  if(c)c.qty++;else cart.push({isbn,qty:1});
+  renderCart();
+}
+function calc(){
+  let sub=0;
+  const lines=cart.map(c=>{const b=books.find(x=>x.isbn===c.isbn);const amt=b.price*c.qty;sub+=amt;return{b,c,amt}});
+  const d=Math.min(100,Math.max(0,+$('disc').value||0))/100;
+  const discAmt=sub*d;
+  
+  return{lines,sub,discAmt,total:sub-discAmt};
+}
+function renderCart(){
+  const r=calc();
+  $('cart').innerHTML=r.lines.length?r.lines.map(l=>`<tr><td>${esc(l.b.isbn)}</td><td>${esc(l.b.title)}</td><td>${fmt(l.b.price)}</td><td><input class="q" type="number" min="1" value="${l.c.qty}" data-i="${esc(l.b.isbn)}"></td><td class="r">${fmt(l.amt)}</td><td><button class="btn sm" data-x="${esc(l.b.isbn)}">✕</button></td></tr>`).join(''):'<tr><td colspan="6" class="mu">Click a book to add it.</td></tr>';
+  $('cart').querySelectorAll('.q').forEach(i=>i.onchange=()=>{const c=cart.find(x=>x.isbn===i.dataset.i),b=books.find(x=>x.isbn===i.dataset.i);c.qty=Math.max(1,parseInt(i.value)||1);renderCart()});
+  $('cart').querySelectorAll('[data-x]').forEach(x=>x.onclick=()=>{cart=cart.filter(c=>c.isbn!==x.dataset.x);renderCart()});
+  $('tot').innerHTML=`<div><span>Subtotal</span><span>${fmt(r.sub)}</span></div><div><span>Discount</span><span>− ${fmt(r.discAmt)}</span></div><div class="g"><span>Total</span><span>${fmt(r.total)}</span></div>`;
+}
+$('q').oninput=renderPick;$('disc').oninput=renderCart;
+$('clr').onclick=()=>{cart=[];$('bmsg').textContent='';renderCart()};
+let genBusy=false;
+$('gen').onclick=async()=>{
+  if(genBusy)return;
+  if(!cart.length){$('bmsg').textContent='Add at least one book.';return}
+  let n=counter;
+  if(CLOUD){
+    genBusy=true;$('gen').disabled=true;
+    try{n=await takeNo('INV')}catch(e){genBusy=false;$('gen').disabled=false;$('bmsg').textContent='No internet connection. Bill not saved - connect and try again.';return}
+    genBusy=false;$('gen').disabled=false;
+  }
+  const r=calc();
+  const bill={no:prefix+String(n).padStart(5,'0'),date:new Date().toISOString(),pay:$('pay').value,
+    items:r.lines.map(l=>({isbn:l.b.isbn,title:l.b.title,price:l.b.price,qty:l.c.qty,amt:l.amt})),
+    sub:r.sub,disc:r.discAmt,total:r.total};
+  sales.unshift(bill);counter=n+1;save();
+  cart=[];$('disc').value=0;$('bmsg').textContent='Bill '+bill.no+' saved.';
+  renderCart();renderPick();showBill(bill);autoSaveBill(bill);
+};
+function billHTML(b,standalone){
+  const body=`<div style="font-family:system-ui,sans-serif;font-size:13.5px"><div style="text-align:center">${logoHTML()}<h2 style="margin:4px 0 0">${esc(SHOP)}</h2><div style="font-size:12px;color:#666">${esc(ADDR)}</div><div style="margin-top:6px"><b>INVOICE</b></div></div>
+  <p><b>${b.no}</b> · ${new Date(b.date).toLocaleString('en-IN')}<br>Payment: ${esc(b.pay)}</p>
+  <table style="width:100%;border-collapse:collapse"><tr><th align="left">ISBN</th><th align="left">Item</th><th align="right">Price</th><th align="right">Qty</th><th align="right">Amount</th></tr>
+  ${b.items.map(i=>`<tr><td>${esc(i.isbn)}</td><td>${esc(i.title)}</td><td align="right">${fmt(i.price)}</td><td align="right">${i.qty}</td><td align="right">${fmt(i.amt)}</td></tr>`).join('')}</table><hr>
+  <div style="text-align:right">Subtotal: ${fmt(b.sub)}<br>Discount: − ${fmt(b.disc)}<br><b style="font-size:17px">Total: ${fmt(b.total)}</b></div>
+  <p style="text-align:center">Thank you! Happy reading 📖</p></div>`;
+  return standalone?`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${b.no}</title></head><body style="max-width:480px;margin:20px auto">${body}</body></html>`:body;
+}
+function showBill(b){lastBill=b;$('pw').value=paperW;$('inv').innerHTML=billHTML(b);$('dlg').showModal()}
+$('dclose').onclick=()=>$('dlg').close();
+function receiptHTML(b){
+  const fs=paperW==='58'?11:12,w=paperW==='58'?'48mm':'72mm',m=n=>'Rs.'+(+n).toFixed(2);
+  const row=(l,r,c)=>`<div class="r ${c||''}"><span>${l}</span><span>${r}</span></div>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${b.no}</title><style>@page{size:${paperW}mm auto;margin:0}*{box-sizing:border-box}body{margin:0 auto;width:${w};padding:2mm 0 10mm;color:#000;background:#fff;font:${fs}px/1.35 'Courier New',monospace}.c{text-align:center}.r{display:flex;justify-content:space-between;gap:6px}.b{font-weight:bold}.t{font-size:${fs+3}px}hr{border:0;border-top:1px dashed #000;margin:5px 0}img{max-width:100%;max-height:60px;filter:grayscale(1) contrast(1.5)}.it{margin-bottom:4px}</style></head><body>`
+  +`<div class="c"><img src="${logoData||DEFAULT_LOGO}" alt=""><br><div class="b t">${esc(SHOP)}</div><div>${esc(ADDR)}</div></div><hr>`
+  +row('Bill: '+b.no,'')+`<div>${new Date(b.date).toLocaleString('en-IN')}</div><hr>`
+  +b.items.map(i=>`<div class="it"><div class="b">${esc(i.title)}</div><div>ISBN: ${esc(i.isbn)}</div>${row(i.qty+' x '+m(i.price),m(i.amt))}</div>`).join('')+'<hr>'
+  +row('Subtotal',m(b.sub))+(b.disc>0?row('Discount','-'+m(b.disc)):'')+row('TOTAL',m(b.total),'b t')+`<div>Paid by: ${esc(b.pay)}</div><hr><div class="c">Thank you! Visit again.</div></body></html>`;
+}
+$('pw').onchange=()=>{paperW=$('pw').value;save()};
+$('rs').onclick=()=>saveFile(lastBill.no+'-receipt.txt',new Blob([textBill(lastBill,paperW==='58'?32:48)],{type:'text/plain'}));
+$('pr').onclick=()=>{
+  const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  f.onload=()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){alert('Printing is blocked here. Click "Save receipt file", open the saved file and print it.')}setTimeout(()=>f.remove(),60000)};
+  document.body.appendChild(f);f.srcdoc=receiptHTML(lastBill);
+};
+function textBill(b,cols){
+  const L='-'.repeat(cols),m=n=>'Rs.'+(+n).toFixed(2);
+  const pad=(l,r)=>{l=String(l);r=String(r);return l+' '.repeat(Math.max(1,cols-l.length-r.length))+r};
+  const wrap=(s,n)=>{const out=[];s=String(s);while(s.length>n){let k=s.lastIndexOf(' ',n);if(k<=0)k=n;out.push(s.slice(0,k));s=s.slice(k).trim()}out.push(s);return out};
+  const ctr=s=>wrap(s,cols).map(x=>' '.repeat(Math.max(0,Math.floor((cols-x.length)/2)))+x);
+  const o=[...ctr(SHOP),...ctr(ADDR),L,'Bill: '+b.no,new Date(b.date).toLocaleString('en-IN'),L];
+  b.items.forEach(i=>{o.push(...wrap(i.title,cols),'ISBN: '+i.isbn,pad(i.qty+' x '+m(i.price),m(i.amt)))});
+  o.push(L,pad('Subtotal',m(b.sub)));if(b.disc>0)o.push(pad('Discount','-'+m(b.disc)));
+  o.push(pad('TOTAL',m(b.total)),'Paid by: '+b.pay,L,...ctr('Thank you! Visit again.'));
+  return o.join('\r\n')+'\r\n';
+}
+function billText(b){return `*${SHOP}*\n${ADDR}\n\nInvoice: ${b.no}\nDate: ${new Date(b.date).toLocaleString('en-IN')}\n\n`+b.items.map((i,n)=>`${n+1}. ${i.title} (ISBN ${i.isbn})\n    ${i.qty} x ${fmt(i.price)} = ${fmt(i.amt)}`).join('\n')+`\n\nSubtotal: ${fmt(b.sub)}\nDiscount: - ${fmt(b.disc)}\n*Total: ${fmt(b.total)}*\nPayment: ${b.pay}\n\nThank you for shopping with us!`}
+
+
+$('ddl').onclick=()=>saveFile(lastBill.no+'.txt',new Blob([textBill(lastBill,48)],{type:'text/plain'}));
+
+// ---------- Inventory ----------
+function renderInv(){
+  const q=$('iq').value.toLowerCase().trim();
+  const list=books.filter(b=>!q||[b.isbn,b.title,b.author,b.category].join(' ').toLowerCase().includes(q));
+  $('icount').textContent='('+books.length+' titles)';
+  $('ibody').innerHTML=list.map(b=>`<tr><td>${esc(b.isbn)}</td><td>${esc(b.title)}</td><td>${esc(b.author)}</td><td>${esc(b.category)}</td><td class="r">${fmt(b.price)}</td><td><button class="btn sm" data-e="${esc(b.isbn)}">Edit</button> <button class="btn sm" data-d="${esc(b.isbn)}">Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="mu">No books yet.</td></tr>';
+  $('ibody').querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>{const b=books.find(y=>y.isbn===x.dataset.e);$('n_isbn').value=b.isbn;$('n_title').value=b.title;$('n_author').value=b.author;$('n_cat').value=b.category;$('n_price').value=b.price});
+  $('ibody').querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{if(confirm('Delete this book?')){books=books.filter(y=>y.isbn!==x.dataset.d);save();render()}});
+}
+$('iq').oninput=renderInv;
+$('add').onclick=()=>{
+  const isbn=$('n_isbn').value.trim(),title=$('n_title').value.trim();
+  if(!isbn||!title){$('imsg').textContent='ISBN and Title are required.';return}
+  const nb={isbn,title,author:$('n_author').value.trim(),category:$('n_cat').value.trim(),price:+$('n_price').value||0};
+  const i=books.findIndex(b=>b.isbn===isbn);i>=0?books[i]=nb:books.push(nb);
+  save();['isbn','title','author','cat','price'].forEach(k=>$('n_'+k).value='');render();$('imsg').textContent='Saved "'+title+'".';
+};
+const pick=(row,names)=>{for(const k of Object.keys(row)){const n=k.toLowerCase().replace(/[^a-z]/g,'');if(names.includes(n))return row[k]}return ''};
+$('file').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const wb=XLSX.read(await f.arrayBuffer());
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+    let add=0,upd=0;
+    rows.forEach((r,idx)=>{
+      const title=String(pick(r,['title','bookname','name','book'])).trim();if(!title)return;
+      const isbn=String(pick(r,['isbn','isbncode','code','id','sku'])).trim()||('B'+String(books.length+idx+1).padStart(4,'0'));
+      const nb={isbn,title,author:String(pick(r,['author','writer'])).trim(),category:String(pick(r,['category','genre','subject'])).trim(),
+        price:+pick(r,['price','mrp','rate','cost'])||0};
+      const i=books.findIndex(b=>b.isbn===isbn);if(i>=0){books[i]=nb;upd++}else{books.push(nb);add++}
+    });
+    save();render();$('imsg').textContent=`Imported: ${add} new, ${upd} updated.`;
+  }catch(err){$('imsg').textContent='Could not read that file. Please use .xlsx, .xls or .csv.'}
+  e.target.value='';
+};
+const IDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('billing-fs',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idbGet=async k=>{const d=await IDB();return new Promise((res,rej)=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
+const idbSet=async(k,v)=>{const d=await IDB();return new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})};
+let dirHandle=null;
+function toast(m){
+  const t=document.createElement('div');t.textContent=m;
+  t.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#222;color:#fff;padding:9px 14px;border-radius:8px;font:13px system-ui,sans-serif;z-index:99;max-width:90%;text-align:center';
+  ($('dlg').open?$('dlg'):document.body).appendChild(t);setTimeout(()=>t.remove(),3500);
+}
+function folderUI(){$('folderBtn').textContent=dirHandle?'📁 '+dirHandle.name:'📁 Choose save folder'}
+async function ensurePerm(){
+  if(!dirHandle)return false;
+  try{const o={mode:'readwrite'};if(await dirHandle.queryPermission(o)==='granted')return true;return(await dirHandle.requestPermission(o))==='granted'}catch(e){return false}
+}
+async function writeToFolder(name,data,sub){
+  const d=await dirHandle.getDirectoryHandle(sub,{create:true});
+  const fh=await d.getFileHandle(name,{create:true});
+  const w=await fh.createWritable();await w.write(data);await w.close();
+}
+async function saveFile(name,data,sub){
+  sub=sub||(/\.xlsx$/i.test(name)?'Exports':'Bills');
+  if(dirHandle&&await ensurePerm()){
+    try{await writeToFolder(name,data,sub);toast('Saved: '+dirHandle.name+'/'+sub+'/'+name);return true}
+    catch(e){toast('Could not write to the folder. Downloading instead.')}
+  }
+  try{
+    const u=URL.createObjectURL(data),a=document.createElement('a');
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);
+  }catch(e){alert('Could not save the file: '+e.message)}
+}
+async function autoSaveBill(b){
+  if(!dirHandle||!(await ensurePerm()))return;
+  try{
+    await writeToFolder(b.no+'.txt',new Blob([textBill(b,48)],{type:'text/plain'}),'Bills');
+    await writeToFolder(b.no+'.html',new Blob([billHTML(b,true)],{type:'text/html'}),'Bills');
+    toast('Bill '+b.no+' saved in '+dirHandle.name+'/Bills');
+  }catch(e){toast('Could not save the bill to the folder.')}
+}
+$('folderBtn').onclick=async()=>{
+  if(!window.showDirectoryPicker){alert('This browser cannot save into a chosen folder. Use Chrome or Edge on a computer. On phones, files are saved to the Downloads folder.');return}
+  try{dirHandle=await window.showDirectoryPicker({id:'billing',mode:'readwrite'});await idbSet('dir',dirHandle);folderUI();toast('Save folder set: '+dirHandle.name)}catch(e){}
+};
+(async()=>{try{dirHandle=(await idbGet('dir'))||null}catch(e){}folderUI()})();
+const xbook=wb=>new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+const invSheet=()=>XLSX.utils.json_to_sheet(books.map(b=>({ISBN:b.isbn,Title:b.title,Author:b.author,Category:b.category,Price:b.price})));
+const salesSheets=()=>{
+  const s=sales.map(b=>({'Bill No':b.no,Date:new Date(b.date).toLocaleString('en-IN'),Payment:b.pay,Subtotal:+b.sub.toFixed(2),Discount:+b.disc.toFixed(2),Total:+b.total.toFixed(2)}));
+  const l=sales.flatMap(b=>b.items.map(i=>({'Bill No':b.no,ISBN:i.isbn,Title:i.title,Price:i.price,Qty:i.qty,Amount:+i.amt.toFixed(2)})));
+  return[XLSX.utils.json_to_sheet(s),XLSX.utils.json_to_sheet(l)];
+};
+$('tpl').onclick=()=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{ISBN:'9780143127741',Title:'Sample Book',Author:'Author Name',Category:'Fiction',Price:299}]),'Inventory');saveFile('inventory-template.xlsx',xbook(wb))};
+$('exp').onclick=()=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,invSheet(),'Inventory');const[a,b]=salesSheets();XLSX.utils.book_append_sheet(wb,a,'Sales');XLSX.utils.book_append_sheet(wb,b,'Sale Items');addMoveSheets(wb);saveFile('bookstore-data.xlsx',xbook(wb))};
+$('sexp').onclick=()=>{const wb=XLSX.utils.book_new();const[a,b]=salesSheets();XLSX.utils.book_append_sheet(wb,a,'Sales');XLSX.utils.book_append_sheet(wb,b,'Sale Items');saveFile('sales-report.xlsx',xbook(wb))};
+$('samp').onclick=()=>{
+  if(books.length&&!confirm('Add sample books to your existing inventory?'))return;
+  [['9780143127741','The Alchemist','Paulo Coelho','Fiction',299,12,0],['9780141439518','Pride and Prejudice','Jane Austen','Classics',199,8,0],['9780062315007','Sapiens','Yuval Noah Harari','History',499,5,0],['9780735211292','Atomic Habits','James Clear','Self-help',450,15,0],['9780099590088','Norwegian Wood','Haruki Murakami','Fiction',350,3,0],['9788129135728','The White Tiger','Aravind Adiga','Fiction',275,9,0],['9780143424208','Wings of Fire','A.P.J. Abdul Kalam','Biography',250,20,0]]
+  .forEach(a=>{if(!books.some(b=>b.isbn===a[0]))books.push({isbn:a[0],title:a[1],author:a[2],category:a[3],price:a[4]})});
+  save();render();
+};
+
+$('logo').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,300/im.width);const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);logoData=c.toDataURL('image/jpeg',.85);save();setBrandLogo();$('imsg').textContent='Logo updated. It will appear on new invoices.'};im.src=r.result};r.readAsDataURL(f);e.target.value=''};
+$('iclr').onclick=()=>{
+  if(!books.length){alert('There are no books in the inventory to clear.');return}
+  if(!confirm('Delete ALL '+books.length+' books from the inventory? This cannot be undone.'+(CLOUD?'\nThis removes them from every laptop using the shared database.':'')+'\nTip: use Export all to Excel first if you need a copy.'))return;
+  books=[];cart=[];$('iq').value='';
+  save();render();
+  $('imsg').textContent='All books cleared from the inventory.';
+};
+$('logoX').onclick=()=>{logoData='';save();setBrandLogo();$('imsg').textContent='Logo removed. The default icon will be used.'};
+// ---------- Sales ----------
+function renderSales(){
+  $('pfx').value=prefix;$('nxt').value=counter;
+  $('scount').textContent='('+sales.length+' bills)';
+  const tot=sales.reduce((s,b)=>s+b.total,0),today=new Date().toDateString();
+  const td=sales.filter(b=>new Date(b.date).toDateString()===today).reduce((s,b)=>s+b.total,0);
+  $('sum').textContent=`Today: ${fmt(td)} · All time: ${fmt(tot)}`;
+  $('sbody').innerHTML=sales.map((b,i)=>`<tr><td>${b.no}</td><td>${new Date(b.date).toLocaleString('en-IN')}</td><td>${esc(b.pay)}</td><td class="r">${b.items.reduce((s,x)=>s+x.qty,0)}</td><td class="r">${fmt(b.total)}</td><td><button class="btn sm" data-v="${i}">View</button></td></tr>`).join('')||'<tr><td colspan="6" class="mu">No sales yet.</td></tr>';
+  $('sbody').querySelectorAll('[data-v]').forEach(x=>x.onclick=()=>showBill(sales[+x.dataset.v]));
+}
+$('pfx').onchange=()=>{prefix=$('pfx').value.trim().replace(/[^\w\-.]/g,'');save();$('pfx').value=prefix;renderSales()};
+$('nxt').onchange=()=>{const n=parseInt($('nxt').value);if(n>0){counter=n;if(CLOUD)setNo('INV',n)}$('nxt').value=counter;save()};
+$('sclr').onclick=()=>{
+  if(!sales.length){alert('There is no sales data to clear.');return}
+  if(!confirm('Delete ALL '+sales.length+' saved bills? This cannot be undone.\nTip: use Export sales to Excel first if you need a copy.'))return;
+  sales=[];
+  if(confirm('Also restart invoice numbers from 1?')){counter=1;if(CLOUD)setNo('INV',1)}
+  save();renderSales();
+};
+// ---------- Inward / Outward pages (scan + master list, with prices) ----------
+const todayStr=()=>new Date().toLocaleDateString('en-CA');
+const norm=s=>String(s||'').replace(/[\s-]/g,'').toLowerCase();
+const mvNo=t=>mvpfx[t]+String(mvno[t]).padStart(5,'0');
+const P={IN:'in',OUT:'out'},TL={IN:'Inward',OUT:'Outward'};
+const gE=(t,s)=>$(P[t]+'_'+s);
+const lineAmt=i=>(+i.price||0)*i.qty;
+const vQty=v=>v.items.reduce((s,i)=>s+i.qty,0);
+const vGross=v=>v.items.reduce((s,i)=>s+lineAmt(i),0);
+const vDisc=v=>vGross(v)*Math.min(100,Math.max(0,+v.disc||0))/100;
+const vNet=v=>vGross(v)-vDisc(v);
+let lastMv=null,camStream=null,camTimer=null,camLast='',camAt=0,camT='IN';
+function mvAddBook(t,b){
+  const c=mvcart[t].find(x=>x.isbn===b.isbn);
+  if(c)c.qty++;else mvcart[t].push({isbn:b.isbn,title:b.title,author:b.author||'',category:b.category||'',price:+b.price||0,qty:1});
+  renderMvCart(t);
+}
+function renderMvPick(t){
+  const q=gE(t,'scan').value.toLowerCase().trim();
+  const l=books.filter(b=>!q||[b.isbn,b.title,b.author,b.category].join(' ').toLowerCase().includes(q)).slice(0,40);
+  gE(t,'pick').innerHTML=l.length?l.map(b=>`<div data-i="${esc(b.isbn)}"><span><b>${esc(b.title)}</b><br><span class="mu">${esc(b.author)} · ${esc(b.isbn)}</span></span><span style="text-align:right">${fmt(b.price)}<br><span class="mu">+ Add</span></span></div>`).join(''):'<div class="mu">No books. Import your Excel file in the Inventory tab.</div>';
+  gE(t,'pick').querySelectorAll('[data-i]').forEach(d=>d.onclick=()=>{const b=books.find(x=>x.isbn===d.dataset.i);if(b)mvAddBook(t,b)});
+}
+function renderMvCart(t){
+  const cart=mvcart[t];
+  gE(t,'cart').innerHTML=cart.length?cart.map((c,i)=>`<tr><td>${esc(c.isbn)}</td><td>${esc(c.title)}</td><td><input class="q" style="width:84px" type="number" min="0" step="0.01" value="${c.price}" data-p="${i}"></td><td><input class="q" type="number" min="1" value="${c.qty}" data-q="${i}"></td><td class="r">${fmt(lineAmt(c))}</td><td><button class="btn sm" data-x="${i}">✕</button></td></tr>`).join(''):'<tr><td colspan="6" class="mu">Scan a barcode or tap a book to add it.</td></tr>';
+  gE(t,'cart').querySelectorAll('[data-p]').forEach(i=>i.onchange=()=>{cart[+i.dataset.p].price=Math.max(0,+i.value||0);renderMvCart(t)});
+  gE(t,'cart').querySelectorAll('[data-q]').forEach(i=>i.onchange=()=>{cart[+i.dataset.q].qty=Math.max(1,parseInt(i.value)||1);renderMvCart(t)});
+  gE(t,'cart').querySelectorAll('[data-x]').forEach(x=>x.onclick=()=>{cart.splice(+x.dataset.x,1);renderMvCart(t)});
+  const gross=cart.reduce((s,c)=>s+lineAmt(c),0),d=Math.min(100,Math.max(0,+gE(t,'disc').value||0)),da=gross*d/100;
+  gE(t,'tot').innerHTML=`<div><span>Total quantity</span><span>${cart.reduce((s,c)=>s+c.qty,0)}</span></div><div><span>Subtotal</span><span>${fmt(gross)}</span></div><div><span>Discount</span><span>− ${fmt(da)}</span></div><div class="g"><span>Net total</span><span>${fmt(gross-da)}</span></div>`;
+}
+function listFor(t){
+  const pf=gE(t,'pf').value,q=gE(t,'q').value.toLowerCase().trim();
+  return moves.filter(v=>v.type===t&&(!pf||v.party===pf)&&(!q||[v.no,v.party,v.ref,v.note].join(' ').toLowerCase().includes(q)));
+}
+function renderMoves(){
+  const rows=moveSummary(),ti=rows.reduce((s,r)=>s+r.inw,0),to=rows.reduce((s,r)=>s+r.out,0);
+  const sumHTML=rows.map(r=>`<tr><td>${esc(r.isbn)}</td><td>${esc(r.title)}</td><td class="r">${r.inw}</td><td class="r">${r.out}</td><td class="r"><b>${r.inw-r.out}</b></td></tr>`).join('')+(rows.length?`<tr><td></td><td><b>Total</b></td><td class="r"><b>${ti}</b></td><td class="r"><b>${to}</b></td><td class="r"><b>${ti-to}</b></td></tr>`:'<tr><td colspan="5" class="mu">No entries yet.</td></tr>');
+  ['IN','OUT'].forEach(t=>{
+    gE(t,'pfx').value=mvpfx[t];gE(t,'next').textContent='Next entry no: '+mvNo(t);
+    if(!gE(t,'date').value)gE(t,'date').value=todayStr();
+    renderMvPick(t);renderMvCart(t);
+    const parties=[...new Set(moves.filter(v=>v.type===t&&v.party).map(v=>v.party))].sort();
+    gE(t,'plist').innerHTML=parties.map(x=>`<option value="${esc(x)}"></option>`).join('');
+    const sel=gE(t,'pf'),cur=sel.value;
+    sel.innerHTML=`<option value="">${t==='IN'?'All suppliers':'All schools'}</option>`+parties.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    sel.value=parties.includes(cur)?cur:'';
+    gE(t,'body').innerHTML=listFor(t).map(v=>`<tr><td>${esc(v.no)}</td><td>${esc(v.date)}</td><td>${esc(v.party)}</td><td>${esc(v.ref)}</td><td class="r">${v.items.length}</td><td class="r">${vQty(v)}</td><td class="r">${fmt(vNet(v))}</td><td><button class="btn sm" data-mv="${v.id}">View</button> <button class="btn sm" data-md="${v.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="8" class="mu">No entries yet.</td></tr>';
+    gE(t,'body').querySelectorAll('[data-mv]').forEach(x=>x.onclick=()=>showMv(moves.find(v=>String(v.id)===x.dataset.mv)));
+    gE(t,'body').querySelectorAll('[data-md]').forEach(x=>x.onclick=()=>{if(confirm('Delete this entry?')){moves=moves.filter(v=>String(v.id)!==x.dataset.md);save();renderMoves()}});
+    gE(t,'sum').innerHTML=sumHTML;
+  });
+}
+function moveSummary(list){
+  const map={};
+  (list||moves).forEach(v=>v.items.forEach(i=>{const r=map[i.isbn]||(map[i.isbn]={isbn:i.isbn,title:i.title,inw:0,out:0});if(v.type==='IN')r.inw+=i.qty;else r.out+=i.qty}));
+  return Object.values(map).sort((a,b)=>a.title.localeCompare(b.title));
+}
+const byDate=(a,b)=>(a.date+String(a.id)).localeCompare(b.date+String(b.id));
+const lineRow=(v,i,n)=>({'Entry No':v.no,Date:v.date,[v.type==='IN'?'Received from':'Sent to']:v.party||'',Reference:v.ref||'','S.No':n+1,ISBN:i.isbn,Title:i.title,Author:i.author||'',Category:i.category||'',Price:+i.price||0,Quantity:i.qty,Amount:lineAmt(i)});
+function addMoveSheets(wb,list){
+  list=(list||moves).slice().sort(byDate);
+  ['IN','OUT'].forEach(t=>{const o=[];list.filter(v=>v.type===t).forEach(v=>v.items.forEach((i,n)=>o.push(lineRow(v,i,n))));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(o),TL[t])});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(list.map(v=>({'Entry No':v.no,Date:v.date,Type:TL[v.type],'School / Supplier':v.party||'',Reference:v.ref||'',Books:v.items.length,'Total Qty':vQty(v),'Gross Amount':vGross(v),'Discount %':+v.disc||0,Discount:vDisc(v),'Net Amount':vNet(v)}))),'Entries');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(moveSummary(list).map(r=>({ISBN:r.isbn,Title:r.title,Inward:r.inw,Outward:r.out,Balance:r.inw-r.out}))),'Stock Summary');
+}
+function exportMoves(list,fname){
+  if(!list.length){alert('There are no entries to export.');return}
+  list=list.slice().sort(byDate);
+  const t=list[0].type,parties=[...new Set(list.map(v=>v.party))],party=parties.length===1?parties[0]:'';
+  const aoa=[[SHOP],[ADDR],[],[TL[t]+' statement'+(party?' - '+party:'')],['Date: '+new Date().toLocaleDateString('en-IN')],[],
+    ['Entry No','Date',t==='IN'?'Received from':'Sent to','Reference','S.No','ISBN','Title','Author','Category','Price','Qty','Amount']];
+  let gross=0,disc=0,qty=0;
+  list.forEach(v=>{
+    v.items.forEach((i,n)=>aoa.push([v.no,v.date,v.party||'',v.ref||'',n+1,i.isbn,i.title,i.author||'',i.category||'',+i.price||0,i.qty,lineAmt(i)]));
+    if(vDisc(v)>0)aoa.push([v.no,'','','','','','','','','Discount '+(+v.disc)+'%','',-vDisc(v)]);
+    gross+=vGross(v);disc+=vDisc(v);qty+=vQty(v);
+  });
+  aoa.push([],['','','','','','','','','','Total quantity','',qty],['','','','','','','','','','Gross amount','',gross],['','','','','','','','','','Total discount','',-disc],['','','','','','','','','','NET AMOUNT','',gross-disc]);
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:14},{wch:11},{wch:24},{wch:14},{wch:6},{wch:15},{wch:34},{wch:20},{wch:14},{wch:16},{wch:6},{wch:13}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Statement');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(list.map(v=>({'Entry No':v.no,Date:v.date,'School / Supplier':v.party||'',Reference:v.ref||'',Books:v.items.length,'Total Qty':vQty(v),'Gross Amount':vGross(v),'Discount %':+v.disc||0,Discount:vDisc(v),'Net Amount':vNet(v)}))),'Entries');
+  saveFile(fname.replace(/[^\w\-.]+/g,'_')+'.xlsx',xbook(wb));
+}
+function showMv(v){
+  if(!v)return;lastMv=v;
+  $('mvinfo').innerHTML=`<div style="font-family:system-ui,sans-serif;font-size:13.5px"><h2 style="margin:0 0 4px">${TL[v.type]} entry</h2><p style="margin:0 0 8px"><b>${esc(v.no)}</b> · ${esc(v.date)}<br>${v.type==='IN'?'Received from':'Sent to'}: ${esc(v.party)||'-'}<br>Reference: ${esc(v.ref)||'-'}${v.note?'<br>Remarks: '+esc(v.note):''}</p><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th align="left">ISBN</th><th align="left">Book</th><th align="right">Price</th><th align="right">Qty</th><th align="right">Amount</th></tr>${v.items.map(i=>`<tr><td>${esc(i.isbn)}</td><td>${esc(i.title)}</td><td align="right">${fmt(i.price)}</td><td align="right">${i.qty}</td><td align="right">${fmt(lineAmt(i))}</td></tr>`).join('')}</table></div><p style="text-align:right">Total quantity: ${vQty(v)}<br>Subtotal: ${fmt(vGross(v))}<br>Discount (${+v.disc||0}%): − ${fmt(vDisc(v))}<br><b style="font-size:16px">Net total: ${fmt(vNet(v))}</b></p></div>`;
+  $('mvdlg').showModal();
+}
+$('mvdclose').onclick=()=>$('mvdlg').close();
+$('mvdx').onclick=()=>exportMoves([lastMv],TL[lastMv.type]+'-'+(lastMv.no&&lastMv.no!=='-'?lastMv.no:'entry'));
+function setupMv(t){
+  const g=s=>gE(t,s),isIn=t==='IN';
+  g('scan').oninput=()=>renderMvPick(t);
+  g('scan').onkeydown=e=>{
+    if(e.key!=='Enter')return;e.preventDefault();
+    const v=g('scan').value.trim();if(!v)return;
+    let b=books.find(x=>norm(x.isbn)===norm(v));
+    if(!b){const r=books.filter(x=>[x.isbn,x.title,x.author].join(' ').toLowerCase().includes(v.toLowerCase()));if(r.length===1)b=r[0]}
+    if(b){mvAddBook(t,b);g('msg').textContent='Added: '+b.title}else g('msg').textContent='No single matching book in the master list for "'+v+'".';
+    g('scan').value='';renderMvPick(t);g('scan').focus();
+  };
+  g('disc').oninput=()=>renderMvCart(t);
+  g('pfx').onchange=()=>{mvpfx[t]=g('pfx').value.trim().replace(/[^\w\-.]/g,'');save();renderMoves()};
+  g('clr').onclick=()=>{
+    mvcart[t]=[];['party','ref','note','scan'].forEach(k=>g(k).value='');g('disc').value=0;g('date').value=todayStr();
+    g('msg').textContent='Form cleared.';renderMvCart(t);renderMvPick(t);
+  };
+  g('clrall').onclick=()=>{
+    const n=moves.filter(v=>v.type===t).length;
+    if(!n){alert('There are no saved '+TL[t].toLowerCase()+' entries to clear.');return}
+    if(!confirm('Delete ALL '+n+' saved '+TL[t].toLowerCase()+' entries? This cannot be undone.\nTip: use Export to Excel first if you need a copy.'))return;
+    moves=moves.filter(v=>v.type!==t);
+    if(confirm('Also restart '+TL[t].toLowerCase()+' entry numbers from 1?')){mvno[t]=1;if(CLOUD)setNo(t,1)}
+    g('pf').value='';g('q').value='';
+    save();renderMoves();g('msg').textContent='All saved '+TL[t].toLowerCase()+' entries cleared.';
+  };
+  g('save').onclick=async()=>{
+    if(g('save').disabled)return;
+    if(!mvcart[t].length){g('msg').textContent='Add at least one book.';return}
+    const party=g('party').value.trim();
+    if(!party){g('msg').textContent='Enter the '+(isIn?'supplier':'school')+' name.';return}
+    let n=mvno[t];
+    if(CLOUD){
+      g('save').disabled=true;
+      try{n=await takeNo(t)}catch(e){g('save').disabled=false;g('msg').textContent='No internet connection. Entry not saved - connect and try again.';return}
+      g('save').disabled=false;
+    }
+    const v={id:Date.now(),no:mvpfx[t]+String(n).padStart(5,'0'),type:t,date:g('date').value||todayStr(),party,ref:g('ref').value.trim(),note:g('note').value.trim(),disc:Math.min(100,Math.max(0,+g('disc').value||0)),items:mvcart[t].map(c=>({...c}))};
+    moves.unshift(v);mvno[t]=n+1;mvcart[t]=[];
+    ['party','ref','note'].forEach(k=>g(k).value='');g('disc').value=0;
+    save();g('msg').textContent='Saved '+v.no+'.';renderMoves();showMv(v);
+  };
+  g('pf').onchange=renderMoves;g('q').oninput=renderMoves;
+  g('exp').onclick=()=>{const pf=g('pf').value;exportMoves(listFor(t),TL[t]+'-'+(pf||'All')+'-'+todayStr())};
+  if(!('BarcodeDetector' in window)||!navigator.mediaDevices)g('cam').style.display='none';
+  g('cam').onclick=()=>{camT=t;$('camdlg').showModal();camStart()};
+}
+function camStop(){
+  clearInterval(camTimer);camTimer=null;
+  if(camStream)camStream.getTracks().forEach(t=>t.stop());camStream=null;
+  if($('camdlg').open)$('camdlg').close();
+}
+async function camStart(){
+  const st=$('camst');
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const v=$('camv');v.srcObject=camStream;await v.play();
+    const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+    st.textContent='Point the camera at a barcode.';
+    camTimer=setInterval(async()=>{
+      try{
+        const r=await det.detect(v);
+        if(r.length){
+          const c=r[0].rawValue,now=Date.now();
+          if(c!==camLast||now-camAt>2000){
+            camLast=c;camAt=now;
+            const b=books.find(x=>norm(x.isbn)===norm(c));
+            if(b){mvAddBook(camT,b);st.textContent='Added: '+b.title}else st.textContent='Not in master list: '+c;
+          }
+        }
+      }catch(e){}
+    },400);
+  }catch(e){st.textContent='Camera is not available or permission was denied.'}
+}
+$('camclose').onclick=camStop;$('camdlg').onclose=camStop;
+setupMv('IN');setupMv('OUT');
+// ---------- Letters (To Whom It May Concern) ----------
+const LP_CSS=`.lp{background:#fff;color:#000;font-family:"Times New Roman",Times,serif;font-size:16px;line-height:1.35;width:100%;max-width:794px;margin:0 auto;display:flex;flex-direction:column;min-height:1000px;box-shadow:0 4px 18px #0003;box-sizing:border-box}
+.lp *{box-sizing:border-box}
+.lp .hd{display:flex;align-items:center;gap:18px;padding:22px 30px 10px}
+.lp .hd img{width:92px;height:92px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.lp .co{font-size:24px;letter-spacing:1px;color:#3558a8;font-weight:300;line-height:1.1;white-space:nowrap}
+.lp .ad{font-size:15px;margin-top:10px}
+.lp .rule{height:3px;border-top:2px solid #d71920;border-bottom:2px solid #d71920;margin:8px 0}
+.lp .bd{flex:1;padding:14px 56px 10px}
+.lp .bd p{margin:0 0 14px}
+.lp .ttl{text-align:center;font-family:Arial,sans-serif;font-size:14px;margin:12px 0 20px!important}
+.lp .sj{font-family:Verdana,sans-serif;font-size:17px}.lp .sjt{font-family:Calibri,Arial,sans-serif;font-size:14px}
+.lp .h1{font-family:Calibri,Arial,sans-serif;color:#1f3a5f;font-size:17px;margin:18px 0 8px 126px}
+.lp .h2{font-family:Cambria,Georgia,serif;color:#1f3a5f;font-weight:700;font-size:21px;margin:30px 0 10px 118px}
+.lp table.lt{border-collapse:collapse;width:max-content;max-width:100%;border:3px double #333;font-size:15px}
+.lp table.lt th,.lp table.lt td{border:3px double #333;padding:1px 4px}
+.lp table.lt th{text-align:center}.lp table.lt .r{text-align:right}.lp table.lt .c{text-align:left}
+.lp table.lt tr.gt td{font-weight:700}
+.lp .bd.ac{text-align:center}
+.lp .bd.ac table.lt{margin-left:auto;margin-right:auto}
+.lp .bd.ac .h1,.lp .bd.ac .h2{margin-left:0;margin-right:0;text-align:center}
+.lp .bd.aj{text-align:justify}
+.lp table.lt td{text-align:left}.lp table.lt td.r{text-align:right}
+.lp .aw{margin-top:18px!important}
+.lp .nt{margin-top:-6px!important;font-size:15px}
+.lp .gap{margin-top:34px!important}
+.lp .ft{text-align:center;padding:8px 20px 22px}
+.lp .ft .kn{margin-top:16px;font-family:"Noto Sans Kannada","Nirmala UI",Tunga,sans-serif}`;
+document.head.appendChild(Object.assign(document.createElement('style'),{textContent:LP_CSS}));
+const LT_FIELDS=['school','campus','date','subject','align','heading','dear','greet','p1','note','thanks','future','close','sign','company','team','addr','qen','qkn','pct'];
+const LT_DEF=()=>({school:'Greenwood High International School',campus:'(IB/IGCSE), Sarjapur Block',date:todayStr(),subject:'Book Fair Sales & Incentive Details – {school}',align:'center',heading:'TO WHOM IT MAY CONCERN',dear:'Dear Sir/Madam,',greet:'Greetings from **Unique Book Fair!**',p1:'We are pleased to provide the sales details of the Book Fair conducted at **{school} {campus}, on {date}**.',thanks:'We sincerely thank {school} for providing us with the opportunity to conduct the Book Fair and for its valuable support and cooperation.',future:'We look forward to continuing our association and working together in the future.',close:'Thank you.',sign:'Yours sincerely,',company:'UNIQUE PUBLISHERS AND DISTRIBUTORS',team:'Unique Book Fair Team',addr:'7th Cross, Srigandhanagara, Sunkadakatte, Bangalore, KA-560091 | Ph : 8660876139',qen:'“The only nectar that quenches the thirst for knowledge is a BOOK”',qkn:'“ಜ್ಞಾನದ ಹಸಿವನ್ನು ನೀಗಿಸುವ ಏಕೈಕ ಅಮೃತವೇ ಪುಸ್ತಕ.”',note:'gdagfkjhajfhkj',pct:25,rows:[{n:'Primer Block',upi:120600,card:42900},{n:'Secondary School Block',upi:35200,card:6600}]});
+let lt=LT_DEF(),ltId=null;
+const nf=n=>(+n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const rup=n=>'₹'+nf(n)+'/-';
+const W1=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'],W10=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+const two=n=>n<20?W1[n]:W10[Math.floor(n/10)]+(n%10?'-'+W1[n%10]:'');
+const three=n=>{const h=Math.floor(n/100),r=n%100;return(h?W1[h]+' Hundred'+(r?' and ':''):'')+(r?two(r):'')};
+function inWords(amt){
+  amt=Math.round((+amt||0)*100)/100;let r=Math.floor(amt);const p=Math.round((amt-r)*100);
+  if(!r&&!p)return 'Zero';
+  const parts=[],cr=Math.floor(r/1e7);r%=1e7;const la=Math.floor(r/1e5);r%=1e5;const th=Math.floor(r/1e3);r%=1e3;
+  if(cr)parts.push(three(cr)+' Crore');
+  if(la)parts.push(two(la)+' Lakh');
+  if(th)parts.push(two(th)+' Thousand');
+  if(r)parts.push((parts.length&&r<100?'and ':'')+three(r));
+  let s=parts.join(' ');
+  if(p)s+=(s?' and ':'')+two(p)+' Paise';
+  return s;
+}
+const ltDate=d=>{const x=new Date(d.date+'T00:00:00');return isNaN(x)?(d.date||''):x.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})};
+const ltSub=(t,d)=>String(t||'').replace(/\{school\}/g,()=>d.school).replace(/\{campus\}/g,()=>d.campus).replace(/\{date\}/g,()=>ltDate(d));
+const rt=(t,d)=>esc(ltSub(t,d)).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+function ltCalc(d){
+  const rs=d.rows.map(r=>({n:r.n,upi:+r.upi||0,card:+r.card||0,tot:(+r.upi||0)+(+r.card||0)}));
+  const U=rs.reduce((s,r)=>s+r.upi,0),C=rs.reduce((s,r)=>s+r.card,0),T=U+C;
+  return {rs,U,C,T,inc:Math.round(T*(+d.pct||0))/100};
+}
+function ltHTML(d){
+  const c=ltCalc(d),logo=logoData||DEFAULT_LOGO;
+  const rowsH=c.rs.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(r.n)}</td><td class="r">${nf(r.upi)}</td><td class="r">${nf(r.card)}</td><td class="r">${nf(r.tot)}</td></tr>`).join('');
+  return `<div class="hd"><img src="${logo}" alt=""><div><div class="co">${esc(d.company)}</div><div class="ad">${esc(d.addr)}</div></div></div><div class="rule"></div>
+<div class="bd ${d.align==='left'?'':d.align==='justify'?'aj':'ac'}"><p class="ttl"><b>${esc(d.heading)}</b></p>
+<p><b class="sj">Subject:</b> <span class="sjt">${rt(d.subject,d)}</span></p>
+<p>${esc(d.dear)}</p><p>${rt(d.greet,d)}</p><p>${rt(d.p1,d)}</p>
+<div class="h1">Book Fair Sales Details</div>
+<table class="lt"><tr><th>Sl. No.</th><th>Particulars</th><th>UPI (₹)</th><th>Card &amp; Cash (₹)</th><th>Total (₹)</th></tr>${rowsH}<tr class="gt"><td></td><td>Grand Total</td><td class="r">${nf(c.U)}</td><td class="r">${nf(c.C)}</td><td class="r">${nf(c.T)}</td></tr></table>
+<div class="h2">Incentive Calculation</div>
+<table class="lt"><tr><th>Sl. No.</th><th>Particulars</th><th>Amount</th></tr><tr><td class="c">1</td><td>Total Book Fair Sales</td><td class="r">${rup(c.T)}</td></tr><tr><td class="c">2</td><td>Agreed Incentive Percentage</td><td class="r" style="text-align:center">${nf(d.pct)}%</td></tr><tr class="gt"><td class="c">3</td><td>Total Incentive Value</td><td class="r">${rup(c.inc)}</td></tr></table>
+<p class="aw"><b>Amount in Words:</b> Rupees ${inWords(c.inc)} Only.</p>${String(d.note||'').trim()?`<p class="nt">(Note : ${rt(d.note,d)})</p>`:''}
+<p class="gap">${rt(d.thanks,d)}</p><p>${rt(d.future,d)}</p>
+<p class="gap">${esc(d.close)}</p>
+<p>${esc(d.sign)}<br><b>${esc(d.company)}</b><br><i>${esc(d.team)}</i></p></div>
+<div class="rule"></div><div class="ft"><b>${esc(d.qen)}</b><div class="kn">${esc(d.qkn)}</div></div>`;
+}
+function renderLtRows(){
+  $('lt_rows').innerHTML=lt.rows.map((r,i)=>`<tr><td><input data-r="${i}" data-k="n" value="${esc(r.n)}" placeholder="e.g. Primer Block"></td><td><input class="q" style="width:96px" type="number" min="0" step="0.01" data-r="${i}" data-k="upi" value="${r.upi}"></td><td><input class="q" style="width:96px" type="number" min="0" step="0.01" data-r="${i}" data-k="card" value="${r.card}"></td><td class="r" id="lt_rt${i}"></td><td><button class="btn sm" data-rx="${i}">✕</button></td></tr>`).join('');
+}
+function ltUpdate(){
+  const c=ltCalc(lt);
+  c.rs.forEach((r,i)=>{const e=$('lt_rt'+i);if(e)e.textContent=nf(r.tot)});
+  $('lt_inc').innerHTML=`<div><span>UPI total</span><span>${fmt(c.U)}</span></div><div><span>Card &amp; Cash total</span><span>${fmt(c.C)}</span></div><div><span>Total book fair sales</span><span>${fmt(c.T)}</span></div><div class="g"><span>Incentive (${nf(lt.pct)}%)</span><span>${fmt(c.inc)}</span></div><div class="mu" style="font-size:12px;display:block;margin-top:4px">Rupees ${inWords(c.inc)} Only.</div>`;
+  $('lt_paper').innerHTML=ltHTML(lt);
+  fitLt();
+  $('lt_state').textContent=ltId?'· editing a saved letter':'· new letter';
+}
+function fitLt(){
+  const w=$('lt_paper'),box=w.parentElement,cw=box.clientWidth;
+  if(!cw)return;
+  const k=Math.min(1,cw/794);
+  w.style.transform='scale('+k+')';
+  box.style.height=Math.ceil(w.offsetHeight*k)+'px';
+}
+if(window.ResizeObserver)new ResizeObserver(fitLt).observe($('lt_paper').parentElement);
+window.addEventListener('resize',fitLt);
+function ltWrite(){LT_FIELDS.forEach(k=>{const e=$('lt_'+k);if(e)e.value=lt[k]==null?'':lt[k]});renderLtRows();ltUpdate()}
+function ltPrint(d){
+  const f=document.createElement('iframe');
+  f.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0';
+  document.body.appendChild(f);
+  const w=f.contentWindow,doc=w.document;doc.open();
+  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc((d.school||'Letter')+' - Book Fair Letter')}</title><style>@page{size:A4;margin:0}html,body{margin:0;background:#fff}${LP_CSS}.lp{max-width:none!important;min-width:0!important;width:210mm;min-height:297mm;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body><div class="lp">${ltHTML(d)}</div></body></html>`);
+  doc.close();
+  const done=()=>setTimeout(()=>f.remove(),500);
+  w.onafterprint=done;setTimeout(()=>{if(f.parentNode)f.remove()},120000);
+  setTimeout(()=>{try{w.focus();w.print()}catch(e){alert('Printing is not available in this browser.');f.remove()}},500);
+}
+function renderLtList(){
+  const q=($('lt_q').value||'').toLowerCase().trim();
+  const l=letters.filter(x=>!q||((x.d.school||'')+' '+(x.d.campus||'')).toLowerCase().includes(q));
+  $('lt_list').innerHTML=l.map(x=>{const c=ltCalc(x.d);return `<tr><td>${esc(ltDate(x.d))}</td><td>${esc(x.d.school)}</td><td class="r">${fmt(c.T)}</td><td class="r">${fmt(c.inc)}</td><td><button class="btn sm" data-lo="${x.id}">Open</button> <button class="btn sm" data-lp="${x.id}">Print</button> <button class="btn sm" data-ld="${x.id}">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5" class="mu">No saved letters yet.</td></tr>';
+}
+LT_FIELDS.forEach(k=>{$('lt_'+k).oninput=()=>{lt[k]=k==='pct'?Math.min(100,Math.max(0,+$('lt_pct').value||0)):$('lt_'+k).value;ltUpdate()}});
+$('lt_rows').oninput=e=>{const t=e.target,i=t.dataset.r;if(i==null)return;lt.rows[+i][t.dataset.k]=t.dataset.k==='n'?t.value:(+t.value||0);ltUpdate()};
+$('lt_rows').onclick=e=>{const x=e.target.closest('[data-rx]');if(!x)return;lt.rows.splice(+x.dataset.rx,1);if(!lt.rows.length)lt.rows.push({n:'',upi:0,card:0});renderLtRows();ltUpdate()};
+$('lt_addrow').onclick=()=>{lt.rows.push({n:'',upi:0,card:0});renderLtRows();ltUpdate()};
+const ltSave=asNew=>{
+  if(!lt.school.trim()){$('lt_msg').textContent='Enter the school name before saving.';return}
+  const d=JSON.parse(JSON.stringify(lt));
+  if(asNew||!ltId)ltId=Date.now();
+  const rec={id:ltId,d,saved:new Date().toISOString()},i=letters.findIndex(x=>x.id===rec.id);
+  if(i>=0)letters[i]=rec;else letters.unshift(rec);
+  save();renderLtList();ltUpdate();$('lt_msg').textContent='Letter saved ('+d.school+').';
+};
+$('lt_save').onclick=()=>ltSave(false);
+$('lt_saveas').onclick=()=>ltSave(true);
+$('lt_print').onclick=()=>ltPrint(lt);
+$('lt_new').onclick=()=>{lt={...LT_DEF(),school:'',campus:'',rows:[{n:'',upi:0,card:0}]};ltId=null;ltWrite();$('lt_msg').textContent='New blank letter. Fill in the school and sales.'};
+$('lt_q').oninput=renderLtList;
+$('lt_list').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const id=b.dataset.lo||b.dataset.lp||b.dataset.ld,x=letters.find(v=>String(v.id)===id);if(!x)return;
+  if(b.dataset.lo){lt=JSON.parse(JSON.stringify(x.d));ltId=x.id;ltWrite();$('lt_msg').textContent='Opened saved letter. Edit and click Save letter to update it.';window.scrollTo({top:0,behavior:'smooth'})}
+  else if(b.dataset.lp)ltPrint(x.d);
+  else if(confirm('Delete the letter for '+x.d.school+'?')){letters=letters.filter(v=>v.id!==x.id);if(ltId===x.id)ltId=null;save();renderLtList();ltUpdate()}
+};
+ltWrite();
+function render(){renderPick();renderCart();renderInv();renderSales();renderMoves();renderLtList()}
+
+// ---------- Book catalogue (Letters > Book catalogue) ----------
+const CAT_BG='catalogue-bg.jpg';
+const CAT_CSS=`.cpage{position:relative;width:297mm;height:210mm;background:#fff9e8;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#092f70;transform-origin:0 0}
+.cbg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:fill;z-index:0}
+.cpanel{position:absolute;left:26.8%;top:25.5%;width:46.2%;height:66.2%;z-index:2;background:rgba(255,250,229,.95);border:1px solid rgba(177,145,70,.65);border-radius:4mm;padding:2.2mm;display:flex;flex-direction:column}
+.chead{height:6mm;flex:none;text-align:center;font-size:8pt;font-weight:bold;letter-spacing:1px;color:#12336c;text-transform:uppercase}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.4mm;flex:1;min-height:0}
+.ccard{min-width:0;min-height:0;border:.25mm solid rgba(171,148,95,.55);background:rgba(255,255,255,.76);padding:1mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden}
+.ccard.empty{visibility:hidden}
+.ccover{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;clip-path:polygon(0 3%,5% 0,10% 3%,15% 0,20% 3%,25% 0,30% 3%,35% 0,40% 3%,45% 0,50% 3%,55% 0,60% 3%,65% 0,70% 3%,75% 0,80% 3%,85% 0,90% 3%,95% 0,100% 3%,100% 97%,95% 100%,90% 97%,85% 100%,80% 97%,75% 100%,70% 97%,65% 100%,60% 97%,55% 100%,50% 97%,45% 100%,40% 97%,35% 100%,30% 97%,25% 100%,20% 97%,15% 100%,10% 97%,5% 100%,0 97%)}
+.cimg{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.cph{font-size:8px;color:#8992a4;text-align:center;line-height:1.4;padding:3px}
+.cpl{display:flex;align-items:center;justify-content:center;gap:2px;min-height:5.2mm;width:100%;font-size:8pt;font-weight:bold;color:#092f70;white-space:nowrap}
+.cprice{min-width:14mm;max-width:90%;text-align:center;outline:none;padding:1px;font-size:9pt;font-weight:bold;color:#092f70}
+.cprice.live{border-bottom:.2mm dashed #c5a64c}`;
+document.head.appendChild(Object.assign(document.createElement('style'),{textContent:CAT_CSS}));
+let catalog={heading:'UNIQUE PUBLISHERS AND DISTRIBUTORS',per:20,bg:'',live:false,books:[]},catSlot=-1,catTimer=0;
+const catUid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const catNew=()=>({id:catUid(),image:'',price:''});
+function catStoreLocal(){try{localStorage.setItem('bsb_cat',JSON.stringify(catalog));return true}catch(e){return false}}
+try{const d=JSON.parse(localStorage.getItem('bsb_cat')||'null');if(d&&Array.isArray(d.books)){let fix=false;catalog={heading:d.heading||catalog.heading,per:[12,16,20].includes(+d.per)?+d.per:20,bg:d.bg||'',live:d.live!=null?!!d.live:d.books.length>0,books:d.books.map(b=>{if(!b.id)fix=true;return {id:b.id||catUid(),image:b.image||'',price:b.price||''}})};if(fix||d.live==null)catStoreLocal()}}catch(e){}
+function catSave(){clearTimeout(catTimer);catTimer=setTimeout(()=>{catalog.live=true;if(catStoreLocal())$('cat_msg').textContent='';else $('cat_msg').textContent='Could not save on this device: browser storage is full. Remove a few covers or use the original background.';if(CLOUD)save()},300)}
+/* called by cloud.js when the shared database has a newer catalogue */
+window.catFromCloud=function(st){
+  const m=st.meta,ids=(m&&m.order)||[];
+  if(!m&&!Object.keys(st.books).length)return;
+  const seen={},list=[];
+  ids.forEach(id=>{const b=st.books[id]||{};seen[id]=1;list.push({id,image:b.image||'',price:b.price||''})});
+  Object.keys(st.books).forEach(id=>{if(!seen[id]){const b=st.books[id];list.push({id,image:b.image||'',price:b.price||''})}});
+  catalog.books=list;
+  if(m){catalog.heading=m.heading||catalog.heading;catalog.per=[12,16,20].includes(+m.per)?+m.per:20}
+  catalog.bg=st.bg||'';catalog.live=true;catStoreLocal();
+  const vis=!$('t-letter').classList.contains('hide')&&!$('lt_cat').classList.contains('hide'),a=document.activeElement;
+  if(vis&&!(a&&a.isContentEditable))renderCat();
+};
+const catPages=()=>Math.max(1,Math.ceil(catalog.books.length/catalog.per));
+const catEnsure=i=>{while(catalog.books.length<=i)catalog.books.push(catNew())};
+const catBgURL=abs=>catalog.bg||(abs?new URL(CAT_BG,location.href).href:CAT_BG);
+function catImg(file,max,q){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=rej;r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))};im.src=r.result};r.readAsDataURL(file)})}
+function catPage(p,print){
+  const per=catalog.per;let cards='';
+  for(let j=0;j<per;j++){
+    const i=p*per+j,b=catalog.books[i]||{image:'',price:''},pr=String(b.price||'').trim();
+    if(print){
+      cards+=`<div class="ccard${b.image||pr?'':' empty'}"><div class="ccover">${b.image?`<img class="cimg" src="${esc(b.image)}" alt="">`:''}</div><div class="cpl">${pr?`<span>₹</span><span class="cprice">${esc(pr)}</span>`:''}</div></div>`;
+    }else{
+      cards+=`<div class="ccard"><button class="cx" data-cx="${i}" title="Remove this slot">✕</button><div class="ccover" data-ci="${i}">${b.image?`<img class="cimg" src="${esc(b.image)}" alt="Book cover">`:'<div class="cph">ADD / PASTE<br>BOOK IMAGE</div>'}</div><div class="cpl"><span>₹</span><span class="cprice live" contenteditable="true" spellcheck="false" inputmode="decimal" data-cp="${i}">${esc(b.price)}</span></div></div>`;
+    }
+  }
+  return `<div class="cpage"><img class="cbg" src="${esc(catBgURL(print))}" alt=""><div class="cpanel"><div class="chead">${esc(catalog.heading)}</div><div class="cgrid" style="grid-template-rows:repeat(${per/4},minmax(0,1fr))">${cards}</div></div></div>`;
+}
+function fitCat(){
+  const box=$('cat_pages'),cw=box.clientWidth;if(!cw)return;
+  box.querySelectorAll('.cwrap').forEach(w=>{const pg=w.firstElementChild,pw=pg.offsetWidth,ph=pg.offsetHeight,k=Math.min(1,cw/pw);pg.style.transform='scale('+k+')';w.style.width=Math.round(pw*k)+'px';w.style.height=Math.round(ph*k)+'px'});
+}
+function renderCat(){
+  const n=catPages();
+  $('cat_pages').innerHTML=Array.from({length:n},(_,p)=>`<div class="cwrap">${catPage(p,false)}</div>`).join('');
+  $('cat_head').value=catalog.heading;$('cat_per').value=catalog.per;
+  const filled=catalog.books.filter(b=>b.image).length;
+  $('cat_info').textContent='· '+filled+' book'+(filled===1?'':'s')+' · '+n+' page'+(n===1?'':'s');
+  fitCat();
+}
+async function catAddFiles(files){
+  const list=[...files].filter(f=>f.type.startsWith('image/'));if(!list.length)return;
+  $('cat_msg').textContent='';
+  for(const f of list){
+    try{const d=await catImg(f,420,.8);let i=catalog.books.findIndex(b=>!b.image);if(i<0){i=catalog.books.length}catEnsure(i);catalog.books[i].image=d}
+    catch(e){$('cat_msg').textContent='One of the files could not be read as an image.'}
+  }
+  catSave();renderCat();
+}
+async function catSetSlot(i,file){
+  if(!file||!file.type.startsWith('image/'))return;
+  try{const d=await catImg(file,420,.8);catEnsure(i);catalog.books[i].image=d;catSave();renderCat()}catch(e){$('cat_msg').textContent='That file could not be read as an image.'}
+}
+function catPrint(){
+  const n=catPages(),f=document.createElement('iframe');
+  f.style.cssText='position:fixed;left:-10000px;top:0;width:297mm;height:210mm;border:0';
+  document.body.appendChild(f);
+  const w=f.contentWindow,doc=w.document;doc.open();
+  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Unique Publishers - Book Catalogue</title><style>@page{size:A4 landscape;margin:0}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}${CAT_CSS}.cpage{break-after:page;page-break-after:always}.cpage:last-child{break-after:auto;page-break-after:auto}</style></head><body>${Array.from({length:n},(_,p)=>catPage(p,true)).join('')}</body></html>`);
+  doc.close();
+  const ready=Promise.all([...doc.images].map(im=>im.complete?1:new Promise(r=>{im.onload=im.onerror=r})));
+  Promise.race([ready,new Promise(r=>setTimeout(r,8000))]).then(()=>setTimeout(()=>{try{w.focus();w.print()}catch(e){alert('Printing is not available in this browser.');f.remove()}},200));
+  w.onafterprint=()=>setTimeout(()=>f.remove(),500);
+  setTimeout(()=>{if(f.parentNode)f.remove()},180000);
+}
+$('cat_add').onclick=()=>$('cat_files').click();
+$('cat_files').onchange=e=>{catAddFiles(e.target.files);e.target.value=''};
+$('cat_one').onchange=e=>{const f=e.target.files[0];if(catSlot>=0)catSetSlot(catSlot,f);e.target.value=''};
+$('cat_page').onclick=()=>{const t=catPages()*catalog.per+1;while(catalog.books.length<t)catalog.books.push(catNew());catSave();renderCat();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
+$('cat_delpage').onclick=()=>{
+  const n=catPages();if(n<2){alert('A catalogue needs at least one page. Use "Clear all" to start over.');return}
+  const part=catalog.books.slice((n-1)*catalog.per);
+  if(part.some(b=>b.image||String(b.price).trim())&&!confirm('Delete the last page and the books on it?'))return;
+  catalog.books=catalog.books.slice(0,(n-1)*catalog.per);catSave();renderCat();
+};
+$('cat_bg').onclick=()=>$('cat_bgfile').click();
+$('cat_bgfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{catalog.bg=await catImg(f,1600,.8);catSave();renderCat()}catch(x){$('cat_msg').textContent='That background could not be read as an image.'}};
+$('cat_bg0').onclick=()=>{catalog.bg='';catSave();renderCat()};
+$('cat_reset').onclick=()=>{if(confirm('Clear all book images and prices?')){catalog.books=[];catSave();renderCat()}};
+$('cat_print').onclick=catPrint;
+$('cat_head').oninput=e=>{catalog.heading=e.target.value;document.querySelectorAll('#cat_pages .chead').forEach(h=>h.textContent=catalog.heading);catSave()};
+$('cat_per').onchange=e=>{catalog.per=+e.target.value||20;catSave();renderCat()};
+$('cat_pages').addEventListener('click',e=>{
+  const x=e.target.closest('[data-cx]');
+  if(x){const i=+x.dataset.cx;if(i<catalog.books.length){catalog.books.splice(i,1);catSave();renderCat()}return}
+  const c=e.target.closest('[data-ci]');if(c){catSlot=+c.dataset.ci;$('cat_one').click()}
+});
+$('cat_pages').addEventListener('input',e=>{const t=e.target.closest('[data-cp]');if(!t)return;const i=+t.dataset.cp;catEnsure(i);catalog.books[i].price=t.innerText.replace(/\s+/g,' ').trim();catSave()});
+$('cat_pages').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('[data-cp]')){e.preventDefault();e.target.blur()}});
+$('cat_pages').addEventListener('dragover',e=>{if(e.target.closest('[data-ci]'))e.preventDefault()});
+$('cat_pages').addEventListener('drop',e=>{const c=e.target.closest('[data-ci]');if(!c)return;e.preventDefault();catSetSlot(+c.dataset.ci,e.dataTransfer.files[0])});
+document.addEventListener('paste',e=>{
+  if($('t-letter').classList.contains('hide')||$('lt_cat').classList.contains('hide'))return;
+  const t=e.target;
+  if(t&&t.isContentEditable){e.preventDefault();document.execCommand('insertText',false,(e.clipboardData.getData('text')||'').replace(/\s+/g,' '));return}
+  if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type.startsWith('image/'));
+  if(it){e.preventDefault();catAddFiles([it.getAsFile()])}
+});
+if(window.ResizeObserver)new ResizeObserver(fitCat).observe($('cat_pages'));
+window.addEventListener('resize',fitCat);
+const LTV={L:['lt_letter','lt_tabL','✉️ To Whom It May Concern <small>Book fair sales &amp; incentive letter</small>'],C:['lt_cat','lt_tabC','📖 Book Catalogue <small>A4 landscape catalogue with prices</small>'],A:['lt_appt','lt_tabA','📝 Appointment Letter <small>Book fair appointment for the school Principal</small>'],P:['lt_prop','lt_tabP','📄 Proposal <small>Introduction &amp; benefits of Unique Book Fairs</small>']};
+function ltView(v){
+  Object.keys(LTV).forEach(k=>{$(LTV[k][0]).classList.toggle('hide',k!==v);$(LTV[k][1]).classList.toggle('pri',k===v)});
+  $('lt_title').innerHTML=LTV[v][2];
+  if(v==='C')renderCat();else if(v==='L')fitLt();else if(v==='A')apUpdate();else propUpdate();
+}
+Object.keys(LTV).forEach(k=>$(LTV[k][1]).onclick=()=>ltView(k));
+const catPubURL=()=>new URL('catalogue.html',location.href).href,catEdURL=()=>new URL('index.html',location.href).href.replace(/index\.html$/,'')+'#catalogue';
+$('cat_link').value=catPubURL();$('cat_open').href=catPubURL();$('cat_elink').value=catEdURL();
+const catCopy=(id,btn)=>{const t=$(id).value,done=()=>{const o=btn.textContent;btn.textContent='Copied ✓';setTimeout(()=>btn.textContent=o,1500)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>{$(id).select();document.execCommand('copy');done()});else{$(id).select();document.execCommand('copy');done()}};
+$('cat_copy').onclick=e=>catCopy('cat_link',e.target);$('cat_ecopy').onclick=e=>catCopy('cat_elink',e.target);
+$('cat_sync').textContent=CLOUD?'☁️ Saved to the shared online database, so every laptop sees the same catalogue. Anyone with the share link can view it (they cannot edit).':'The online database is not set up (config.js is empty), so this catalogue is saved on this device only and the share link will not show it.';
+
+// ---------- Appointment letter + Proposal (Letters tabs) ----------
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const AP_CSS=`.lp .bk{text-align:center;font:900 46px/1.05 "Arial Black",Impact,"Segoe UI Black",Arial,sans-serif;color:#4b86d6;letter-spacing:2px;margin:12px 0 2px!important;-webkit-text-stroke:1.4px #1c4a9c;paint-order:stroke fill;text-shadow:2px 2px 0 #fff,3px 3px 0 #a9c3ea,5px 5px 4px #0003}
+.lp .al{text-align:center;font-weight:700;font-size:23px;margin:8px 0 22px!important}
+.lp .to{font-weight:700;margin:0 0 8px!important}
+.lp .pp1{text-indent:52px;text-align:justify}
+.lp .pp2{font-weight:700;text-align:justify}
+.lp table.mt{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0 16px;table-layout:fixed}
+.lp table.mt th,.lp table.mt td{border:1px solid #000;padding:3px 1px;text-align:center}
+.lp table.mt th:first-child,.lp table.mt td:first-child{width:74px;text-align:left;font-weight:700;padding-left:6px}
+.lp table.mt td{height:24px}
+.lp .pr{text-align:justify}
+.lp .fr{display:flex;justify-content:space-between;gap:28px;margin:0 0 16px}
+.lp .fr>div{flex:1;font-weight:700;white-space:nowrap}
+.lp .ln{display:inline-block;border-bottom:1.3px solid #000;min-width:110px;padding:0 6px;font-weight:400;text-align:center}
+.lp .sg{font-weight:700;margin-top:52px!important}`;
+const PP_CSS=`.pp{position:relative;width:794px;height:1120px;overflow:hidden;box-sizing:border-box;padding:118px 46px 40px;font-family:"Times New Roman",Times,serif;font-size:17px;line-height:1.3;color:#000;display:flex;flex-direction:column}
+.pp *{box-sizing:border-box}
+.pbg-green{background:linear-gradient(160deg,#e6f7ec 0%,#ffffff 46%,#e8f2ff 100%)}
+.pbg-blue{background:linear-gradient(160deg,#e8f1ff 0%,#ffffff 46%,#f1eaff 100%)}
+.pbg-peach{background:linear-gradient(160deg,#fff1e6 0%,#ffffff 46%,#ffeaf4 100%)}
+.pbg-white{background:#fff}
+.pplogo{position:absolute;top:14px;right:40px;width:92px;height:92px;border-radius:50%;object-fit:cover}
+.ppbody{flex:1;min-height:0;overflow:hidden}
+.ppi p{margin:0 0 12px}
+.ppi.pj p{text-align:justify}
+.ppi.pd p{font-weight:700}
+.pbk{display:flex;align-items:center;gap:14px;border:1.3px solid #222;border-radius:34px;padding:6px 24px 6px 6px;margin:0 0 13px;background:rgba(255,255,255,.62)}
+.pbk .bi{flex:0 0 184px;height:116px;display:flex;align-items:center;justify-content:center;margin-left:-14px}
+.pbk .bi img{max-width:100%;max-height:100%;object-fit:contain}
+.pbk .bt{flex:1;text-align:justify}
+.pbk .bt::before{content:"";display:inline-block;margin-right:10px;border-left:10px solid #111;border-top:5px solid transparent;border-bottom:5px solid transparent;vertical-align:middle}
+.ppi.pc p{text-align:center;margin:0 0 14px}
+.ppi.ps p{margin:0;white-space:pre-line}`;
+[AP_CSS,PP_CSS].forEach(c=>document.head.appendChild(Object.assign(document.createElement('style'),{textContent:c})));
+const PB_NAMES=['Service','Prices','Pages','Demand','Choices','Profit','Listen','Independent','Creativity','Local focus','All in 1 roof','Author visit'],PB_IMG=['service','prices','pages','demand','choices','profit','listen','independent','creativity','localfocus','allinone','authorvisit'];
+const AP_DEF=()=>({big:'BOOK FAIR',sub:'APPOINTMENT LETTER: 2026-27',to:'The Principal',school:'',
+  p1:'It was a great closing last year in Bengaluru and we are happy to launch our operations in Bengaluru, Tumakuru from this year onwards. We need your support in **organizing book fairs** at your school during PTM, Open Day or during Library week.',
+  p2:'**UNIQUE is only focused on Book Fairs and Library supplies. These are the months when we would like to do book fair activities.**',
+  start:3,profit:'**Profit:** As discussed, Unique will be offering {inc} of the actual sales as free incentives in the form of books to the school library and {lib} for all your library purchases. We have a special {tch} discounts to teachers and staffs.',
+  inc:'20%',lib:'25 %',tch:'10 % to 15%',students:'',grade:'',board:'',venue:'',sig:'Sign of Principal with seal',
+  company:'UNIQUE PUBLISHERS AND DISTRIBUTORS',addr:'#31, 7th CROSS, SRIGANDHANAGARA, SUNKADAKATTE, NESR ANJALI PUBLIC SCHOOL, BANGALORE, KARNATAKA- 560091',
+  qen:'“The only nectar that quenches the thirst for knowledge is a BOOK”',qkn:'“ಜ್ಞಾನದ ಹಸಿವನ್ನು ನೀಗಿಸುವ ಏಕೈಕ ಅಮೃತವೇ ಪುಸ್ತಕ.”'});
+const PR_DEF=()=>({bg:'green',greet:'Dear Sir / Madam,',
+  intro:['Greetings from UNIQUE. . .','Warm welcome to the new academic year 2026-27. . .','Are you looking for a School Book Fair Company to bring something which is UNIQUE,','Innovative, entertaining, and never seen long list of Publishers?','UNIQUE launched in Bengaluru in the year 2026!!!!!!!!!!',"UNIQUE is one of the fastest growing School Book Fair Company in Karnataka with association with world's biggest brands starting from **Penguin Books, National Geography, Random House, Ladybird, DK, Harper Collins, Egmont, Puffin, Simon & Schuster, Hachette, Usborne, Bloomsbury, Walker, Pan Macmillan, Ladybird, Icon and some of the finest Indian publishers ACK, Duckbill, Rupa, Aleph, Pratham Books, Tara Press, Tulika, Indian Thought, and Teri.**"].join('\n'),
+  blocks:['From set up to clean up, we do the heavy lifting for you. No volunteers to help? No Problem!','Up to 75% of our titles are marked down from retail, making this event accessible to everyone.','The Unique School Book Fairs are a true family reading event, with hundreds of titles for kids and adults. More than 25 different categories we represent covering 5000 plus books at a time.','Most of the books that we display is not easily available at books stores around Bengaluru, and Online. You find many books specially imported from UK and other countries at a very special Price.','Competition is a positive for your school and all schools. So give us an opportunity what best we offer to your school and students.','With a wide range of options to pick from, we can help your school achieve the goals that you have set. Hundreds of titles to pick from for your book profit, and no minimum amounts for cash profit. **We will be offering 20% of the total sales as free Incentives in the form of books of your own Choice.**',"The UNIQUE Book Fair is designed with your school in mind. We gladly welcome Suggestions for categories and age groups. And because we do the setup, we'll take with us anything you don't want on your fair.",'The UNIQUE Book Fair is not owned by a publishing company, so we can select the best Titles from all publishers as listed above.',"Creativity - We select over 5000 new items every season. This will help us to change 70% of our books every time we represent book fair at your school. Add that to our commitment to bring you the best children's titles of all time, and imagine the excitement!",'Local Focus - As a member of the community, our focus is on local schools, and we support the local economy.','For all your library needs, we have close to 50,000 fast selling and popular books that are recommended as library reading books apart from our long list of popular publishers. We know your school and we just want to make it big with our every book fair.','One of the biggest asset Unique is to work closely with our long list of authors who read for us and for our schools. Not Just local authors but also National wide popular and internationally known authors.'],
+  closing:['Today our presence in everywhere and we are happy to share our association with the most happening schools. **Our commitment is to you, because you are our neighbors**','We strongly believe that reading should never stop at one publisher. When god have given us so many wonderful publishers then why should we stop our **children’s to read the same books for so many years.,**',"**Let's re-create the magic of reading and move one step globally!**"].join('\n'),
+  sign:'Warm Regards…..\n\nUNIQUE PUBLISHERS AND DISTRIBUTORS\n(Book Fairs and Library supplies)\nBangalore Karnataka\nPh.: 86181 56856 / 84314 75875'});
+let docs={ap:AP_DEF(),pr:PR_DEF()},docsTimer=0;
+try{const d=JSON.parse(localStorage.getItem('bsb_docs')||'null');if(d){Object.assign(docs.ap,d.ap||{});Object.assign(docs.pr,d.pr||{});if(!Array.isArray(docs.pr.blocks)||docs.pr.blocks.length!==12)docs.pr.blocks=PR_DEF().blocks}}catch(e){}
+const docsSave=()=>{clearTimeout(docsTimer);docsTimer=setTimeout(()=>{try{localStorage.setItem('bsb_docs',JSON.stringify(docs))}catch(e){}},300)};
+const mkB=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const lines=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean);
+const absURL=u=>new URL(u,location.href).href;
+
+/* ----- Appointment letter ----- */
+function apHTML(d){
+  const logo=logoData||DEFAULT_LOGO,ms=Array.from({length:12},(_,i)=>MONTHS[((+d.start||0)+i)%12]);
+  const wk=['1<sup>st</sup> Week','2<sup>nd</sup> Week','3<sup>rd</sup> Week','4<sup>th</sup> Week','5<sup>th</sup> Week'];
+  const ln=(v,w)=>`<span class="ln" style="min-width:${w}px">${esc(v)}</span>`;
+  const u=v=>`<u><b>${esc(v)}</b></u>`;
+  const profit=mkB(d.profit).replace(/\{inc\}/g,()=>u(d.inc)).replace(/\{lib\}/g,()=>u(d.lib)).replace(/\{tch\}/g,()=>u(d.tch));
+  return `<div class="hd"><img src="${logo}" alt=""><div><div class="co">${esc(d.company)}</div><div class="ad" style="font-size:13px;margin-top:8px">${esc(d.addr)}</div></div></div><div class="rule"></div>
+<div class="bd aj" style="padding-top:6px"><div class="bk">${esc(d.big)}</div><p class="al">${esc(d.sub)}</p>
+<p class="to">To</p><p class="to">${esc(d.to)}</p>${d.school?`<p class="to">${esc(d.school)}</p>`:''}
+<p class="pp1">${mkB(d.p1)}</p><p class="pp2">${mkB(d.p2)}</p>
+<table class="mt"><tr><th>Period</th>${ms.map(m=>`<th>${m}</th>`).join('')}</tr>${wk.map(w=>`<tr><td>${w}</td>${ms.map(()=>'<td></td>').join('')}</tr>`).join('')}</table>
+<p class="pr">${profit}</p>
+<div class="fr"><div>Total Number of Students: ${ln(d.students,110)}</div><div>Classes from: Grade ${ln(d.grade,120)}</div></div>
+<div class="fr"><div>School Board: ${ln(d.board,150)}</div><div>Venue: ${ln(d.venue,150)}</div></div>
+<p class="sg">${esc(d.sig)}</p></div>
+<div class="rule"></div><div class="ft"><b>${esc(d.qen)}</b><div class="kn">${esc(d.qkn)}</div></div>`;
+}
+function fitBox(el){
+  const box=el.parentElement,cw=box.clientWidth;if(!cw)return;
+  const k=Math.min(1,cw/794);el.style.transform='scale('+k+')';box.style.height=Math.ceil(el.offsetHeight*k)+'px';
+}
+const apUpdate=()=>{$('ap_paper').innerHTML=apHTML(docs.ap);fitBox($('ap_paper'))};
+const AP_KEYS=['big','sub','to','school','p1','p2','profit','inc','lib','tch','students','grade','board','venue','sig','company','addr','qen','qkn'];
+function apWrite(){AP_KEYS.forEach(k=>$('ap_'+k).value=docs.ap[k]);$('ap_start').value=docs.ap.start;apUpdate()}
+AP_KEYS.forEach(k=>$('ap_'+k).oninput=e=>{docs.ap[k]=e.target.value;apUpdate();docsSave()});
+$('ap_start').onchange=e=>{docs.ap.start=+e.target.value;apUpdate();docsSave()};
+$('ap_reset').onclick=()=>{if(confirm('Reset the appointment letter wording and details to the original?')){docs.ap=AP_DEF();docsSave();apWrite()}};
+if(window.ResizeObserver)new ResizeObserver(()=>{if($('ap_paper').offsetParent)fitBox($('ap_paper'))}).observe($('ap_paper').parentElement);
+
+/* ----- shared print helper (hidden iframe, same approach as letters) ----- */
+function docPrint(title,css,body,after){
+  const f=document.createElement('iframe');
+  f.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0';
+  document.body.appendChild(f);
+  const w=f.contentWindow,doc=w.document;doc.open();
+  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:A4;margin:0}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}${css}</style></head><body>${body}</body></html>`);
+  doc.close();
+  if(after)after(doc);
+  const ready=Promise.all([...doc.images].map(im=>im.complete?1:new Promise(r=>{im.onload=im.onerror=r})));
+  Promise.race([ready,new Promise(r=>setTimeout(r,8000))]).then(()=>setTimeout(()=>{try{w.focus();w.print()}catch(e){alert('Printing is not available in this browser.');f.remove()}},300));
+  w.onafterprint=()=>setTimeout(()=>f.remove(),500);
+  setTimeout(()=>{if(f.parentNode)f.remove()},180000);
+}
+$('ap_print').onclick=()=>docPrint((docs.ap.sub||'Appointment Letter'),LP_CSS+AP_CSS+'.lp{max-width:none!important;min-width:0!important;width:210mm;min-height:296mm;box-shadow:none!important}',`<div class="lp">${apHTML(docs.ap)}</div>`);
+
+/* ----- Proposal ----- */
+function propItems(d){
+  const out=[];
+  out.push({c:'pd',h:`<p>${esc(d.greet)}</p>`});
+  lines(d.intro).forEach(t=>out.push({c:'pj',h:`<p>${mkB(t)}</p>`}));
+  d.blocks.forEach((t,i)=>out.push({c:'',h:`<div class="pbk"><div class="bi"><img src="${absURL('proposal/'+PB_IMG[i]+'.webp')}" alt="${esc(PB_NAMES[i])}"></div><div class="bt">${mkB(t)}</div></div>`}));
+  lines(d.closing).forEach(t=>out.push({c:'pc',h:`<p>${mkB(t)}</p>`}));
+  if(String(d.sign||'').trim())out.push({c:'ps',h:`<p>${esc(d.sign)}</p>`});
+  return out;
+}
+/* lays the items out on A4 pages by measuring; works in the app and inside the print iframe */
+function propBuild(doc,d,host){
+  const logo=logoData||DEFAULT_LOGO,bg=['green','blue','peach','white'].includes(d.bg)?d.bg:'green';
+  const mk=()=>{const pg=doc.createElement('div');pg.className='pp pbg-'+bg;pg.innerHTML=`<img class="pplogo" src="${logo}" alt=""><div class="ppbody"></div>`;host.appendChild(pg);return pg.querySelector('.ppbody')};
+  let body=mk();
+  propItems(d).forEach(it=>{
+    const el=doc.createElement('div');el.className='ppi '+it.c;el.innerHTML=it.h;body.appendChild(el);
+    if(body.children.length>1&&el.getBoundingClientRect().bottom-body.getBoundingClientRect().top+14>body.clientHeight){body.removeChild(el);body=mk();body.appendChild(el)}
+  });
+}
+function fitPp(){
+  const box=$('pp_pages'),cw=box.clientWidth;if(!cw)return;
+  box.querySelectorAll('.cwrap').forEach(w=>{const pg=w.firstElementChild,k=Math.min(1,cw/794);pg.style.transform='scale('+k+')';pg.style.transformOrigin='0 0';w.style.width=Math.round(794*k)+'px';w.style.height=Math.round(1120*k)+'px'});
+}
+function propUpdate(){
+  const host=$('pp_pages'),tmp=document.createElement('div');
+  tmp.style.cssText='position:absolute;left:-10000px;top:0;width:794px';document.body.appendChild(tmp);
+  propBuild(document,docs.pr,tmp);
+  host.innerHTML='';
+  [...tmp.children].forEach(pg=>{const w=document.createElement('div');w.className='cwrap';w.appendChild(pg);host.appendChild(w)});
+  tmp.remove();fitPp();
+}
+let ppTimer=0;const propSoon=()=>{clearTimeout(ppTimer);ppTimer=setTimeout(propUpdate,150)};
+function prWrite(){
+  $('pr_bg').value=docs.pr.bg;$('pr_greet').value=docs.pr.greet;$('pr_intro').value=docs.pr.intro;$('pr_closing').value=docs.pr.closing;$('pr_sign').value=docs.pr.sign;
+  $('pr_blocks').innerHTML=docs.pr.blocks.map((t,i)=>`<label class="f">${i+1}. ${esc(PB_NAMES[i])}</label><textarea data-b="${i}" style="min-height:80px">${esc(t)}</textarea>`).join('');
+  propUpdate();
+}
+$('pr_bg').onchange=e=>{docs.pr.bg=e.target.value;propUpdate();docsSave()};
+[['greet','pr_greet'],['intro','pr_intro'],['closing','pr_closing'],['sign','pr_sign']].forEach(([k,id])=>$(id).oninput=e=>{docs.pr[k]=e.target.value;propSoon();docsSave()});
+$('pr_blocks').oninput=e=>{const i=e.target.dataset.b;if(i==null)return;docs.pr.blocks[+i]=e.target.value;propSoon();docsSave()};
+$('pr_reset').onclick=()=>{if(confirm('Reset the proposal wording to the original?')){docs.pr=PR_DEF();docsSave();prWrite()}};
+window.addEventListener('resize',fitPp);
+if(window.ResizeObserver)new ResizeObserver(()=>{if($('pp_pages').offsetParent)fitPp()}).observe($('pp_pages'));
+$('pr_print').onclick=()=>docPrint('Unique Book Fair - Proposal',PP_CSS+'.pp{width:210mm;height:296.5mm;break-after:page;page-break-after:always}.pp:last-child{break-after:auto;page-break-after:auto}',`<div id="pp_host"></div>`,doc=>propBuild(doc,docs.pr,doc.getElementById('pp_host')));
+apWrite();prWrite();
+
+const catHash=()=>{const m=/^#(catalogue|appointment|proposal)/i.exec(location.hash);if(m){document.querySelector('nav button[data-t=letter]').click();ltView({catalogue:'C',appointment:'A',proposal:'P'}[m[1].toLowerCase()])}};
+window.addEventListener('hashchange',catHash);
+
+load();render();setBrandLogo();catHash();
+</script>
+<script>
+let _dp=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_dp=e;document.getElementById('install').classList.remove('hide')});
+window.addEventListener('appinstalled',()=>document.getElementById('install').classList.add('hide'));
+document.getElementById('install').onclick=async()=>{if(!_dp)return;_dp.prompt();try{await _dp.userChoice}catch(e){}_dp=null;document.getElementById('install').classList.add('hide')};
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+<script>
+(function(){
+  const g=id=>document.getElementById(id);
+  const PIN_HASH=2711869992599061;
+  function h53(str,seed=0){let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return 4294967296*(2097151&h2)+(h1>>>0)}
+  let memOK=false,tries=0,until=0;
+  const stored=()=>{try{return sessionStorage.getItem('bsu')==='1'}catch(e){return false}};
+  function show(){document.body.classList.add('locked');g('pin').value='';setTimeout(()=>g('pin').focus(),50)}
+  function hide(){document.body.classList.remove('locked')}
+  function attempt(){
+    const now=Date.now(),msg=g('pinmsg');
+    if(now<until){msg.textContent='Too many attempts. Wait '+Math.ceil((until-now)/1000)+' seconds.';return}
+    if(h53(g('pin').value.trim())===PIN_HASH){
+      tries=0;memOK=true;try{sessionStorage.setItem('bsu','1')}catch(e){}
+      msg.textContent='';g('pin').value='';hide();
+    }else{
+      tries++;msg.textContent='Wrong PIN. Please try again.';g('pin').value='';
+      g('pin').classList.remove('shake');void g('pin').offsetWidth;g('pin').classList.add('shake');
+      if(tries>=5){until=now+30000;tries=0}
+    }
+  }
+  g('unlock').onclick=attempt;
+  g('pin').onkeydown=e=>{if(e.key==='Enter')attempt()};
+  g('logout').onclick=()=>{memOK=false;try{sessionStorage.removeItem('bsu')}catch(e){}show()};
+  g('menu').onclick=()=>document.body.classList.toggle('nav-open');
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+  if(stored()||memOK)hide();else show();
+})();
+</script>
+<script src="cloud.js"></script>
+</body></html>

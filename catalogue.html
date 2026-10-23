@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unique Publishers - Book Catalogue</title>
+<meta name="theme-color" content="#092f70">
+<link rel="icon" href="icon-192.png">
+<style>
+*{box-sizing:border-box}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#e9edf4;--bar:#092f70}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1621}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#092f70}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:30}
+.bar b{margin-right:auto;font-size:15px}
+.bar button{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;background:#f6c933;color:#092f70}
+#state{max-width:560px;margin:40px auto;padding:0 18px;text-align:center;color:#49566c;line-height:1.5}
+@media (prefers-color-scheme:dark){#state{color:#b6c2d4}}
+#pages{padding:14px 10px 30px}
+.cwrap{overflow:hidden;margin:0 auto 14px;border-radius:6px;box-shadow:0 4px 20px #0003;background:#fff9e8}
+.cpage{position:relative;width:297mm;height:210mm;background:#fff9e8;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#092f70;transform-origin:0 0}
+.cbg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:fill;z-index:0}
+.cpanel{position:absolute;left:26.8%;top:25.5%;width:46.2%;height:66.2%;z-index:2;background:rgba(255,250,229,.95);border:1px solid rgba(177,145,70,.65);border-radius:4mm;padding:2.2mm;display:flex;flex-direction:column}
+.chead{height:6mm;flex:none;text-align:center;font-size:8pt;font-weight:bold;letter-spacing:1px;color:#12336c;text-transform:uppercase}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.4mm;flex:1;min-height:0}
+.ccard{min-width:0;min-height:0;border:.25mm solid rgba(171,148,95,.55);background:rgba(255,255,255,.76);padding:1mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden}
+.ccard.empty{visibility:hidden}
+.ccover{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;clip-path:polygon(0 3%,5% 0,10% 3%,15% 0,20% 3%,25% 0,30% 3%,35% 0,40% 3%,45% 0,50% 3%,55% 0,60% 3%,65% 0,70% 3%,75% 0,80% 3%,85% 0,90% 3%,95% 0,100% 3%,100% 97%,95% 100%,90% 97%,85% 100%,80% 97%,75% 100%,70% 97%,65% 100%,60% 97%,55% 100%,50% 97%,45% 100%,40% 97%,35% 100%,30% 97%,25% 100%,20% 97%,15% 100%,10% 97%,5% 100%,0 97%)}
+.cimg{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.cpl{display:flex;align-items:center;justify-content:center;gap:2px;min-height:5.2mm;width:100%;font-size:8pt;font-weight:bold;color:#092f70;white-space:nowrap}
+.cprice{min-width:14mm;max-width:90%;text-align:center;padding:1px;font-size:9pt;font-weight:bold;color:#092f70}
+@page{size:A4 landscape;margin:0}
+@media print{
+  html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  :root{padding:0}body::before,.bar,#state{display:none!important}
+  #pages{padding:0}
+  .cwrap{width:297mm!important;height:210mm!important;margin:0;border-radius:0;box-shadow:none;break-after:page;page-break-after:always}
+  .cwrap:last-child{break-after:auto;page-break-after:auto}
+  .cpage{transform:none!important}
+}
+</style></head>
+<body>
+<div class="bar"><b>📚 Unique Publishers and Distributors · Book Catalogue</b><button id="print" class="hide" style="display:none">Print / Save PDF</button></div>
+<div id="state">Loading the catalogue…</div>
+<div id="pages"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state=m=>{$('state').style.display=m?'block':'none';$('state').textContent=m||''};
+const CFG=window.APP_CFG;
+let cat=null;
+function pageHTML(p){
+  const per=cat.per;let cards='';
+  for(let j=0;j<per;j++){
+    const b=cat.books[p*per+j]||{},pr=String(b.price||'').trim();
+    cards+=`<div class="ccard${b.image||pr?'':' empty'}"><div class="ccover">${b.image?`<img class="cimg" src="${esc(b.image)}" alt="Book cover">`:''}</div><div class="cpl">${pr?`<span>₹</span><span class="cprice">${esc(pr)}</span>`:''}</div></div>`;
+  }
+  return `<div class="cwrap"><div class="cpage"><img class="cbg" src="${esc(cat.bg||'catalogue-bg.jpg')}" alt=""><div class="cpanel"><div class="chead">${esc(cat.heading)}</div><div class="cgrid" style="grid-template-rows:repeat(${per/4},minmax(0,1fr))">${cards}</div></div></div></div>`;
+}
+function fit(){
+  const cw=document.documentElement.clientWidth-20;if(cw<=0)return;
+  document.querySelectorAll('.cwrap').forEach(w=>{const pg=w.firstElementChild,pw=pg.offsetWidth,ph=pg.offsetHeight,k=Math.min(1,cw/pw);pg.style.transform='scale('+k+')';w.style.width=Math.round(pw*k)+'px';w.style.height=Math.round(ph*k)+'px'});
+}
+function show(){
+  const n=Math.max(1,Math.ceil(cat.books.length/cat.per));
+  document.title=cat.heading+' - Book Catalogue';
+  $('pages').innerHTML=Array.from({length:n},(_,p)=>pageHTML(p)).join('');
+  state('');$('print').style.display='';fit();
+}
+async function load(){
+  if(!(CFG&&CFG.url&&CFG.key)){state('This catalogue is not connected to the online database yet.');return}
+  if(typeof supabase==='undefined'||!supabase.createClient){state('Could not load. Please check your internet connection and reload.');return}
+  const sb=supabase.createClient(CFG.url,CFG.key,{auth:{persistSession:false,autoRefreshToken:false}});
+  try{
+    const rows=[];
+    for(let from=0;;from+=200){
+      const {data,error}=await sb.from('records').select('id,data').eq('kind','catbook').order('id').range(from,from+199);
+      if(error)throw error;rows.push(...data);if(data.length<200)break;
+    }
+    const {data:st,error:e2}=await sb.from('records').select('id,data').eq('kind','set').in('id',['catmeta','catbg']);
+    if(e2)throw e2;
+    const books={};rows.forEach(r=>books[r.id]=r.data);
+    let meta=null,bg='';(st||[]).forEach(r=>{if(r.id==='catmeta')meta=r.data&&r.data.v;else bg=(r.data&&r.data.v)||''});
+    const order=(meta&&meta.order)||[],list=[],seen={};
+    order.forEach(id=>{if(books[id]){list.push(books[id]);seen[id]=1}});
+    Object.keys(books).forEach(id=>{if(!seen[id])list.push(books[id])});
+    if(!meta&&!list.length){state('The catalogue is empty right now. Please check back soon.');return}
+    const per=meta&&[12,16,20].includes(+meta.per)?+meta.per:20;
+    cat={heading:(meta&&meta.heading)||'UNIQUE PUBLISHERS AND DISTRIBUTORS',per,bg,books:list};
+    if(!list.some(b=>b.image||String(b.price||'').trim())){state('The catalogue is empty right now. Please check back soon.');return}
+    show();
+  }catch(e){
+    state('The catalogue could not be opened. If you are the shop owner: run database-update.sql once in Supabase (see README), then reload this page.');
+  }
+}
+$('print').onclick=()=>window.print();
+window.addEventListener('resize',fit);
+load();
+})();
+</script>
+</body></html>
